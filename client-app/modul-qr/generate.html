@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Presensi Dosen</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 min-h-screen flex items-center justify-center">
+
+<div class="bg-white/20 backdrop-blur-xl shadow-2xl rounded-3xl p-10 w-[480px] text-white">
+
+  <h2 class="text-2xl font-bold text-center mb-6">QR Presensi Dosen</h2>
+
+  <div class="space-y-4">
+
+    <div>
+      <label class="block mb-1 text-sm">Course</label>
+      <select id="course" class="w-full p-2 rounded-lg text-black">
+        <option value="cloud-101">cloud-101</option>
+        <option value="cloud-102">cloud-102</option>
+        <option value="cloud-103">cloud-103</option>
+        <option value="cloud-104">cloud-104</option>
+        <option value="cloud-105">cloud-105</option>
+        <option value="cloud-106">cloud-106</option>
+        <option value="cloud-107">cloud-107</option>
+        <option value="cloud-108">cloud-108</option>
+        <option value="cloud-109">cloud-109</option>
+        <option value="cloud-110">cloud-110</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block mb-1 text-sm">Session</label>
+      <select id="session" class="w-full p-2 rounded-lg text-black">
+        <option value="sesi-01">sesi-01</option>
+        <option value="sesi-02">sesi-02</option>
+        <option value="sesi-03">sesi-03</option>
+        <option value="sesi-04">sesi-04</option>
+        <option value="sesi-05">sesi-05</option>
+        <option value="sesi-06">sesi-06</option>
+        <option value="sesi-07">sesi-07</option>
+        <option value="sesi-08">sesi-08</option>
+        <option value="sesi-09">sesi-09</option>
+        <option value="sesi-10">sesi-10</option>
+      </select>
+    </div>
+
+    <div class="flex gap-3">
+      <button onclick="startPresence()" 
+        class="flex-1 bg-white text-purple-600 font-semibold py-2 rounded-lg hover:scale-105 transition">
+        Mulai
+      </button>
+
+      <button onclick="stopPresence()" 
+        class="flex-1 bg-red-500 text-white font-semibold py-2 rounded-lg hover:scale-105 transition">
+        Stop
+      </button>
+    </div>
+
+  </div>
+
+  <div class="flex justify-center mt-8">
+    <div id="qrcode" class="p-4 bg-white rounded-2xl shadow-xl transition-opacity duration-500"></div>
+  </div>
+
+  <div id="countdown" class="text-center mt-4 font-semibold text-lg"></div>
+  <div id="status" class="text-center mt-2 text-sm opacity-80"></div>
+
+</div>
+
+<script>
+
+const baseUrl = "https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec";
+
+let timer = null;
+let countdownInterval = null;
+let seconds = 300; // 5 menit
+let isActive = false;
+
+async function generateQR() {
+
+  if (!isActive) return;
+
+  const course = document.getElementById("course").value;
+  const session = document.getElementById("session").value;
+
+  const body = new URLSearchParams({
+    path: "presence/qr/generate",
+    course_id: course,
+    session_id: session
+  });
+
+  try {
+
+    const response = await fetch(baseUrl, {
+      method: "POST",
+      body: body
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      alert("Error: " + data.error);
+      return;
+    }
+
+    const token = data.data.qr_token;
+    const qrDiv = document.getElementById("qrcode");
+
+    qrDiv.style.opacity = "0";
+
+    setTimeout(() => {
+      qrDiv.innerHTML = "";
+      new QRCode(qrDiv, {
+        text: token,
+        width: 230,
+        height: 230
+      });
+      qrDiv.style.opacity = "1";
+    }, 300);
+
+    seconds = 300;
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+  }
+}
+
+function startCountdown() {
+
+  countdownInterval = setInterval(() => {
+
+    document.getElementById("countdown").innerText =
+      "QR berubah dalam " + seconds + " detik";
+
+    seconds--;
+
+    if (seconds < 0) {
+      generateQR();
+    }
+
+  }, 1000);
+}
+
+function startPresence() {
+
+  if (isActive) return;
+
+  isActive = true;
+
+  document.getElementById("status").innerText = "Status: Presensi Aktif";
+  document.getElementById("status").className = "text-center mt-2 text-sm text-green-300";
+
+  generateQR();
+  startCountdown();
+
+  timer = setInterval(() => {
+    generateQR();
+  }, 300000); // 5 menit
+}
+
+function stopPresence() {
+
+  isActive = false;
+
+  clearInterval(timer);
+  clearInterval(countdownInterval);
+
+  document.getElementById("countdown").innerText = "";
+  document.getElementById("status").innerText = "Status: Presensi Berhenti";
+  document.getElementById("status").className = "text-center mt-2 text-sm text-red-300";
+
+}
+
+</script>
+
+</body>
+</html>
