@@ -1,0 +1,89 @@
+openapi: 3.0.0
+info:
+  title: Cloud Computing Kick-Off Project API
+  description: API untuk sistem presensi berbasis QR Code
+  version: 1.0.0
+
+servers:
+  - url: https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec
+
+paths:
+  /exec:
+    post:
+      summary: Scan Presence / Generate QR
+      description: Endpoint utama untuk scan presensi atau generate QR berdasarkan request body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                device_id:
+                  type: string
+                course_id:
+                  type: string
+                session_id:
+                  type: string
+                qr_token:
+                  type: string
+      responses:
+        "200":
+          description: Response sukses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  data:
+                    type: object
+        "400":
+          description: Error response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  error:
+                    type: string
+
+    get:
+      summary: Presence Status
+      description: Mengecek status presensi mahasiswa
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: course_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Status presensi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
