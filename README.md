@@ -40,6 +40,10 @@ https://kamilasaadah.github.io/Cloud-Computing-KickOff-Project/
 ## Dokumentasi
 https://docs.google.com/document/d/15qucBpNdQBquqEQstzvqbC8hPQoBRXf2Ds04OsVF5Wo/edit
 
+## Swagger Documentation
+File dokumentasi API tersedia di `swagger.yaml`
+dan dapat dibuka menggunakan https://editor.swagger.io/
+
 ## Pembagian Tugas
 - Backend: Mila  
 - Frontend: Wafi  
