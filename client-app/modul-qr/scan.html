@@ -2,7 +2,8 @@
 <html>
 <head>
   <title>Scan QR Presensi</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/cozmo/jsQR@master/dist/jsQR.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script> -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -220,6 +221,31 @@ async function sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token)
   } catch (err) {
     document.getElementById("status").innerText = "Gagal koneksi: " + err.message + ". Cek jaringan atau URL.";
     document.getElementById("status").className = "text-red-300";
+  }
+}
+
+async function scanQR() {
+  if (!scanning) return;
+
+  canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
+
+  try {
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      console.log("QR detected:", code.data); // Debug console
+      document.getElementById("status").innerText = "QR terdeteksi: " + code.data;
+      document.getElementById("status").className = "text-green-300";
+      stopScan();
+      await sendCheckIn(baseUrl, userId, deviceId, course, session, code.data);
+    } else {
+      requestAnimationFrame(scanQR);
+    }
+  } catch (err) {
+    console.error("jsQR error:", err);
+    document.getElementById("status").innerText = "Error scanner: " + err.message + ". Cek console.";
+    document.getElementById("status").className = "text-red-300";
+    stopScan();
   }
 }
 
