@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan QR Presensi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 min-h-screen flex items-center justify-center">
+
+<div class="bg-white/20 backdrop-blur-xl shadow-2xl rounded-3xl p-10 w-[480px] text-white">
+
+  <h2 class="text-2xl font-bold text-center mb-6">Scan QR Presensi</h2>
+
+  <div class="space-y-4">
+
+    <div>
+      <label class="block mb-1 text-sm">Base URL (untuk swap test)</label>
+      <input id="baseUrl" class="w-full p-2 rounded-lg text-black" placeholder="https://script.google.com/macros/s/.../exec" value="">
+      <select id="urlHistory" class="w-full mt-2 p-2 rounded-lg text-black" onchange="loadUrl()">
+        <option value="">-- Pilih URL Sebelumnya --</option>
+      </select>
+      <button onclick="saveUrl()" class="mt-2 bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg hover:scale-105 transition">Simpan URL</button>
+    </div>
+
+    <div>
+      <label class="block mb-1 text-sm">NIM / User ID</label>
+      <input id="userId" class="w-full p-2 rounded-lg text-black" placeholder="2023xxxx">
+    </div>
+
+    <div>
+      <label class="block mb-1 text-sm">Device ID</label>
+      <input id="deviceId" class="w-full p-2 rounded-lg text-black" placeholder="dev-001" value="dev-001"> <!-- Default value -->
+    </div>
+
+    <div>
+      <label class="block mb-1 text-sm">Course</label>
+      <select id="course" class="w-full p-2 rounded-lg text-black">
+        <option value="cloud-101">cloud-101</option>
+        <option value="cloud-102">cloud-102</option>
+        <option value="cloud-103">cloud-103</option>
+        <option value="cloud-104">cloud-104</option>
+        <option value="cloud-105">cloud-105</option>
+        <option value="cloud-106">cloud-106</option>
+        <option value="cloud-107">cloud-107</option>
+        <option value="cloud-108">cloud-108</option>
+        <option value="cloud-109">cloud-109</option>
+        <option value="cloud-110">cloud-110</option>
+      </select>
+      <p class="text-xs mt-1 opacity-80">Pilih course sesuai QR yang ditampilkan dosen.</p>
+    </div>
+
+    <div>
+      <label class="block mb-1 text-sm">Session</label>
+      <select id="session" class="w-full p-2 rounded-lg text-black">
+        <option value="sesi-01">sesi-01</option>
+        <option value="sesi-02">sesi-02</option>
+        <option value="sesi-03">sesi-03</option>
+        <option value="sesi-04">sesi-04</option>
+        <option value="sesi-05">sesi-05</option>
+        <option value="sesi-06">sesi-06</option>
+        <option value="sesi-07">sesi-07</option>
+        <option value="sesi-08">sesi-08</option>
+        <option value="sesi-09">sesi-09</option>
+        <option value="sesi-10">sesi-10</option>
+      </select>
+      <p class="text-xs mt-1 opacity-80">Pilih session sesuai QR yang ditampilkan dosen.</p>
+    </div>
+
+    <button onclick="startScan()" class="w-full bg-white text-purple-600 font-semibold py-2 rounded-lg hover:scale-105 transition">Scan QR</button>
+
+  </div>
+
+  <div class="flex justify-center mt-8">
+    <video id="video" width="300" height="200" class="rounded-2xl shadow-xl hidden"></video>
+    <canvas id="canvas" class="hidden"></canvas>
+  </div>
+
+  <div id="status" class="text-center mt-4 font-semibold text-lg"></div>
+
+</div>
+
+<script>
+
+let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let canvasCtx = canvas.getContext("2d");
+let scanning = false;
+
+// Load URL history from localStorage
+window.onload = function() {
+  let urls = JSON.parse(localStorage.getItem("urlHistory")) || [];
+  let select = document.getElementById("urlHistory");
+  urls.forEach(url => {
+    let option = document.createElement("option");
+    option.value = url;
+    option.text = url.substring(0, 30) + "...";
+    select.appendChild(option);
+  });
+};
+
+function loadUrl() {
+  let select = document.getElementById("urlHistory");
+  document.getElementById("baseUrl").value = select.value;
+}
+
+function saveUrl() {
+  let url = document.getElementById("baseUrl").value;
+  if (!url) return alert("Masukkan Base URL dulu!");
+  
+  let urls = JSON.parse(localStorage.getItem("urlHistory")) || [];
+  if (!urls.includes(url)) {
+    urls.push(url);
+    localStorage.setItem("urlHistory", JSON.stringify(urls));
+    let select = document.getElementById("urlHistory");
+    let option = document.createElement("option");
+    option.value = url;
+    option.text = url.substring(0, 30) + "...";
+    select.appendChild(option);
+    alert("URL disimpan!");
+  } else {
+    alert("URL sudah ada!");
+  }
+}
+
+async function startScan() {
+  if (scanning) return;
+
+  const baseUrl = document.getElementById("baseUrl").value;
+  const userId = document.getElementById("userId").value;
+  const deviceId = document.getElementById("deviceId").value;
+  const course = document.getElementById("course").value;
+  const session = document.getElementById("session").value;
+
+  if (!baseUrl || !userId || !deviceId || !course || !session) {
+    return alert("Isi semua field!");
+  }
+
+  scanning = true;
+  document.getElementById("status").innerText = "Membuka kamera...";
+  document.getElementById("status").className = "text-yellow-300"; // Loading initial
+
+  video.classList.remove("hidden");
+  canvas.width = 300;
+  canvas.height = 200;
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    video.play();
+    requestAnimationFrame(scanQR);
+  } catch (err) {
+    document.getElementById("status").innerText = "Error akses kamera: " + err;
+    document.getElementById("status").className = "text-red-300";
+    scanning = false;
+  }
+
+  async function scanQR() {
+    if (!scanning) return;
+
+    canvasCtx.drawImage(video, 0, 0, 300, 200);
+    const imageData = canvasCtx.getImageData(0, 0, 300, 200);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (code) {
+      const qr_token = code.data;
+      document.getElementById("status").innerText = "QR terdeteksi: " + qr_token;
+      document.getElementById("status").className = "text-green-300"; // Hijau untuk deteksi
+      stopScan();
+      await sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token);
+    } else {
+      requestAnimationFrame(scanQR);
+    }
+  }
+}
+
+function stopScan() {
+  scanning = false;
+  video.pause();
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(track => track.stop());
+  }
+  video.classList.add("hidden");
+}
+
+async function sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token) {
+  document.getElementById("status").innerText = "Mengirim check-in...";
+  document.getElementById("status").className = "text-yellow-300 animate-pulse"; // Loading spinner effect (pulse)
+
+  const ts = new Date().toISOString();
+  const body = new URLSearchParams({
+    path: "presence/checkin",
+    user_id: userId,
+    device_id: deviceId,
+    course_id: course,
+    session_id: session,
+    qr_token: qr_token,
+    ts: ts
+  });
+
+  try {
+    const response = await fetch(baseUrl, {
+      method: "POST",
+      body: body
+    });
+    const data = await response.json();
+
+    if (data.ok) {
+      document.getElementById("status").innerText = "Check-in berhasil! Presence ID: " + data.data.presence_id;
+      document.getElementById("status").className = "text-green-300";
+    } else {
+      let reason = data.error;
+      if (reason === "token_expired") reason = "Token QR sudah kadaluarsa. Scan ulang!";
+      else if (reason === "invalid_token") reason = "Token QR tidak valid. Pastikan scan yang benar.";
+      else if (reason === "missing_field") reason = "Data kurang lengkap. Cek input!";
+      else reason = reason; // Fallback
+      document.getElementById("status").innerText = "Gagal: " + reason;
+      document.getElementById("status").className = "text-red-300";
+    }
+  } catch (err) {
+    document.getElementById("status").innerText = "Gagal koneksi: " + err.message + ". Cek jaringan atau URL.";
+    document.getElementById("status").className = "text-red-300";
+  }
+}
+
+</script>
+
+</body>
+</html>
