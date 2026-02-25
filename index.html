@@ -1,29 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Presensi QR App</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+    }
+    .pulse-glow { animation: pulseGlow 2s infinite; }
+
+    /* Sidebar mobile toggle */
+    #sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    #sidebar.open {
+      transform: translateX(0);
+    }
+  </style>
 </head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white">
 
-<body class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 min-h-screen flex">
+  <!-- Hamburger Button (Mobile Only) -->
+  <button id="menuBtn" class="lg:hidden fixed top-4 left-4 z-50 bg-black/40 backdrop-blur-lg p-3 rounded-full border border-white/20 shadow-lg">
+    <i class="fas fa-bars text-xl text-emerald-400"></i>
+  </button>
 
-<!-- Sidebar Navigation -->
-<nav class="bg-white/20 backdrop-blur-xl shadow-2xl w-64 p-6 flex flex-col space-y-4 text-white">
-  <h2 class="text-xl font-bold mb-4">Menu</h2>
-  <a href="index.html" class="hover:bg-white/10 p-2 rounded-lg">Home</a>
-  <a href="client-app/modul-qr/generate.html" class="hover:bg-white/10 p-2 rounded-lg">Generate QR (Dosen)</a>
-  <a href="client-app/modul-qr/scan.html" class="hover:bg-white/10 p-2 rounded-lg">Scan QR (Mahasiswa)</a>
-  <!-- Tambah link lain nanti, misalnya Status atau Docs -->
-  <a href="docs/API_Contract_QR.md" class="hover:bg-white/10 p-2 rounded-lg">Dokumentasi API</a>
-</nav>
+  <!-- Sidebar (sama untuk semua halaman) -->
+  <nav id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-black/60 backdrop-blur-2xl border-r border-white/10 transform -translate-x-full lg:translate-x-0 lg:relative lg:flex lg:flex-col lg:space-y-6 lg:p-8 lg:shadow-2xl z-40 transition-all duration-300">
+    <div class="flex items-center gap-3 mb-6 px-4 lg:px-0">
+      <i class="fas fa-qrcode text-3xl text-emerald-400"></i>
+      <h2 class="text-2xl font-bold">Presensi QR</h2>
+    </div>
+    <div class="space-y-2 px-4 lg:px-0">
+      <a href="index.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition backdrop-blur-sm text-emerald-300 font-medium">
+        <i class="fas fa-home"></i> Home
+      </a>
+      <a href="client-app/modul-qr/generate.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition backdrop-blur-sm">
+        <i class="fas fa-user-graduate"></i> Generate QR (Dosen)
+      </a>
+      <a href="client-app/modul-qr/scan.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition backdrop-blur-sm">
+        <i class="fas fa-camera"></i> Scan QR (Mahasiswa)
+      </a>
+      <a href="docs/API_Contract_QR.md" class="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition backdrop-blur-sm">
+        <i class="fas fa-book"></i> Dokumentasi API
+      </a>
+    </div>
+  </nav>
 
-<!-- Content Utama -->
-<main class="flex-1 flex items-center justify-center text-white">
-  <div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">Selamat Datang di Presensi QR App</h1>
-    <p class="text-lg">Pilih menu di sidebar untuk mulai. App ini untuk presensi kuliah dinamis via QR.</p>
-  </div>
-</main>
+  <!-- Overlay untuk mobile sidebar -->
+  <div id="overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden lg:hidden"></div>
 
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col items-center justify-center p-6 lg:p-10">
+    <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8 sm:p-10 lg:p-12 w-full max-w-3xl text-center transition-all duration-300">
+      
+      <!-- Hero Title -->
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center justify-center gap-4">
+        <i class="fas fa-qrcode text-emerald-300"></i> Presensi QR Dinamis
+      </h1>
+
+      <!-- Deskripsi -->
+      <p class="text-lg sm:text-xl opacity-90 mb-10 max-w-2xl mx-auto">
+        Sistem absensi kuliah anti-titip dengan QR code yang selalu berubah setiap sesi. Aman, cepat, dan modern — cocok untuk dosen & mahasiswa.
+      </p>
+
+      <!-- Fitur Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        <div class="bg-black/30 backdrop-blur-lg p-6 rounded-2xl border border-emerald-500/20 hover:border-emerald-500/50 transition">
+          <i class="fas fa-user-graduate text-4xl text-emerald-400 mb-4"></i>
+          <h3 class="text-xl font-bold mb-2">Generate QR (Dosen)</h3>
+          <p class="opacity-80">Buat token QR unik per sesi, otomatis refresh setiap 5 menit.</p>
+        </div>
+        <div class="bg-black/30 backdrop-blur-lg p-6 rounded-2xl border border-emerald-500/20 hover:border-emerald-500/50 transition">
+          <i class="fas fa-camera text-4xl text-emerald-400 mb-4"></i>
+          <h3 class="text-xl font-bold mb-2">Scan QR (Mahasiswa)</h3>
+          <p class="opacity-80">Scan cepat via kamera, check-in instan tanpa titip absen.</p>
+        </div>
+      </div>
+
+      <!-- Call to Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-6 justify-center">
+        <a href="client-app/modul-qr/scan.html" 
+           class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-5 px-10 rounded-2xl transition transform hover:scale-105 shadow-xl pulse-glow flex items-center justify-center gap-3">
+          <i class="fas fa-camera text-xl"></i> Scan QR Sekarang
+        </a>
+        <a href="client-app/modul-qr/generate.html" 
+           class="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-bold py-5 px-10 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3">
+          <i class="fas fa-user-graduate text-xl"></i> Generate QR (Dosen)
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Footer kecil -->
+    <footer class="mt-12 text-sm opacity-70">
+      © 2026 Presensi QR App • Dibuat untuk presensi kuliah dinamis
+    </footer>
+  </main>
+
+  <!-- JavaScript untuk Sidebar Mobile Toggle -->
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('hidden');
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.add('hidden');
+    });
+
+    // Tutup sidebar jika klik link di mobile
+    document.querySelectorAll('#sidebar a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth < 1024) {
+          sidebar.classList.remove('open');
+          overlay.classList.add('hidden');
+        }
+      });
+    });
+  </script>
 </body>
 </html>

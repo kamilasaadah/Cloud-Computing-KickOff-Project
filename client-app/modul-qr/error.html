@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Check-in Gagal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+    }
+    .pulse-glow { animation: pulseGlow 2s infinite; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-4 sm:p-6 md:p-8">
+
+  <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8 sm:p-10 md:p-12 w-full max-w-md sm:max-w-lg md:max-w-xl text-center transition-all duration-300">
+
+    <div class="mx-auto w-24 h-24 sm:w-32 sm:h-32 bg-red-500/20 rounded-full flex items-center justify-center mb-6 sm:mb-8 pulse-glow">
+      <i class="fas fa-circle-exclamation text-red-400 text-6xl sm:text-8xl"></i>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-rose-400">
+      Check-in Gagal
+    </h1>
+
+    <p id="errorMsg" class="text-lg sm:text-xl opacity-90 mb-8 sm:mb-10 leading-relaxed"></p>
+
+    <a href="scan.html" 
+       class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-4 px-10 sm:px-12 rounded-2xl transition transform hover:scale-105 shadow-xl pulse-glow inline-flex items-center justify-center gap-3 text-lg">
+      <i class="fas fa-redo"></i> Coba Lagi
+    </a>
+
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let msg = urlParams.get('msg') || "Terjadi kesalahan. Silakan coba lagi.";
+    // Improve pesan agar lebih user-friendly
+    if (msg.includes("token_expired")) msg = "Token QR sudah kadaluarsa. Silakan scan ulang QR terbaru!";
+    else if (msg.includes("invalid_token")) msg = "Token QR tidak valid. Pastikan Anda scan QR yang benar.";
+    else if (msg.includes("missing_field")) msg = "Data kurang lengkap. Mohon isi semua field dengan benar.";
+    else if (msg.includes("Gagal koneksi")) msg = "Gagal terhubung ke server. Periksa koneksi internet atau Base URL Anda.";
+    document.getElementById('errorMsg').innerText = msg;
+  </script>
+</body>
+</html>

@@ -1,179 +1,241 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>QR Presensi Dosen</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generate QR Presensi (Dosen)</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+    }
+    .pulse-glow { animation: pulseGlow 2s infinite; }
+
+    /* Custom select styling (sama seperti scan.html) */
+    select {
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 20 20'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.5em;
+    }
+    select option {
+      background-color: #111827;
+      color: white;
+    }
+    select option:hover {
+      background-color: #374151;
+    }
+    select:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+    }
+
+    /* QR container responsive adjustment */
+    #qrcode {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #qrcode canvas {
+      max-width: 100% !important;
+      max-height: 100% !important;
+    }
+  </style>
 </head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-4 sm:p-6 lg:p-8">
 
-<body class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 min-h-screen flex items-center justify-center">
+  <!-- Main Card - Dark Glassmorphism -->
+  <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-5 sm:p-8 lg:p-10 w-full max-w-[95vw] sm:max-w-lg lg:max-w-xl transition-all duration-300">
 
-<div class="bg-white/20 backdrop-blur-xl shadow-2xl rounded-3xl p-10 w-[480px] text-white">
-
-  <h2 class="text-2xl font-bold text-center mb-6">QR Presensi Dosen</h2>
-
-  <div class="space-y-4">
-
-    <div>
-      <label class="block mb-1 text-sm">Course</label>
-      <select id="course" class="w-full p-2 rounded-lg text-black">
-        <option value="cloud-101">cloud-101</option>
-        <option value="cloud-102">cloud-102</option>
-        <option value="cloud-103">cloud-103</option>
-        <option value="cloud-104">cloud-104</option>
-        <option value="cloud-105">cloud-105</option>
-        <option value="cloud-106">cloud-106</option>
-        <option value="cloud-107">cloud-107</option>
-        <option value="cloud-108">cloud-108</option>
-        <option value="cloud-109">cloud-109</option>
-        <option value="cloud-110">cloud-110</option>
-      </select>
+    <!-- Header -->
+    <div class="text-center mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center justify-center gap-3">
+        <i class="fas fa-user-graduate"></i> Generate QR Dosen
+      </h1>
+      <p class="text-sm sm:text-base opacity-80 mt-2">Buat QR dinamis untuk sesi presensi</p>
     </div>
 
-    <div>
-      <label class="block mb-1 text-sm">Session</label>
-      <select id="session" class="w-full p-2 rounded-lg text-black">
-        <option value="sesi-01">sesi-01</option>
-        <option value="sesi-02">sesi-02</option>
-        <option value="sesi-03">sesi-03</option>
-        <option value="sesi-04">sesi-04</option>
-        <option value="sesi-05">sesi-05</option>
-        <option value="sesi-06">sesi-06</option>
-        <option value="sesi-07">sesi-07</option>
-        <option value="sesi-08">sesi-08</option>
-        <option value="sesi-09">sesi-09</option>
-        <option value="sesi-10">sesi-10</option>
-      </select>
+    <!-- Form -->
+    <div class="space-y-5 sm:space-y-6">
+
+      <div>
+        <label class="block mb-1.5 sm:mb-2 text-sm font-medium opacity-90">Course</label>
+        <select id="course" class="w-full p-3 sm:p-3.5 rounded-xl bg-black/50 border border-white/20 text-white focus:outline-none focus:border-emerald-500 transition text-sm sm:text-base">
+          <option value="cloud-101">cloud-101</option>
+          <option value="cloud-102">cloud-102</option>
+          <option value="cloud-103">cloud-103</option>
+          <option value="cloud-104">cloud-104</option>
+          <option value="cloud-105">cloud-105</option>
+          <option value="cloud-106">cloud-106</option>
+          <option value="cloud-107">cloud-107</option>
+          <option value="cloud-108">cloud-108</option>
+          <option value="cloud-109">cloud-109</option>
+          <option value="cloud-110">cloud-110</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-1.5 sm:mb-2 text-sm font-medium opacity-90">Session</label>
+        <select id="session" class="w-full p-3 sm:p-3.5 rounded-xl bg-black/50 border border-white/20 text-white focus:outline-none focus:border-emerald-500 transition text-sm sm:text-base">
+          <option value="sesi-01">sesi-01</option>
+          <option value="sesi-02">sesi-02</option>
+          <option value="sesi-03">sesi-03</option>
+          <option value="sesi-04">sesi-04</option>
+          <option value="sesi-05">sesi-05</option>
+          <option value="sesi-06">sesi-06</option>
+          <option value="sesi-07">sesi-07</option>
+          <option value="sesi-08">sesi-08</option>
+          <option value="sesi-09">sesi-09</option>
+          <option value="sesi-10">sesi-10</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
+        <button onclick="startPresence()" 
+          class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition transform hover:scale-[1.03] shadow-xl flex items-center justify-center gap-2 sm:gap-3 pulse-glow text-base sm:text-lg">
+          <i class="fas fa-play"></i> Mulai
+        </button>
+
+        <button onclick="stopPresence()" 
+          class="flex-1 bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-800 hover:to-rose-800 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition transform hover:scale-[1.03] shadow-xl flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-lg">
+          <i class="fas fa-stop"></i> Stop
+        </button>
+      </div>
+
     </div>
 
-    <div class="flex gap-3">
-      <button onclick="startPresence()" 
-        class="flex-1 bg-white text-purple-600 font-semibold py-2 rounded-lg hover:scale-105 transition">
-        Mulai
-      </button>
-
-      <button onclick="stopPresence()" 
-        class="flex-1 bg-red-500 text-white font-semibold py-2 rounded-lg hover:scale-105 transition">
-        Stop
-      </button>
+    <!-- QR Code Area - Responsive size -->
+    <div class="mt-8 sm:mt-10 flex justify-center">
+      <div id="qrcode" class="p-4 sm:p-6 bg-black/60 rounded-3xl shadow-2xl border border-emerald-500/30 transition-all duration-500 w-full max-w-[min(80vw,360px)] aspect-square flex items-center justify-center">
+        <!-- QR akan digenerate di sini -->
+      </div>
     </div>
+
+    <!-- Countdown & Status -->
+    <div id="countdown" class="text-center mt-5 sm:mt-6 text-base sm:text-lg font-semibold text-emerald-300"></div>
+    <div id="status" class="text-center mt-3 text-sm sm:text-base opacity-90 min-h-[2.5rem] sm:min-h-[3rem]"></div>
+
+    <!-- Tombol Kembali ke Home (baru ditambahkan di sini) -->
+    <div class="mt-8 flex justify-center">
+      <a href="../../index.html" 
+         class="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-bold py-4 px-10 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 text-lg">
+        <i class="fas fa-home"></i> Kembali ke Home
+      </a>
+    </div>
+
+    <!-- Status -->
+    <div id="status" class="text-center mt-8 text-lg font-semibold min-h-[5rem] transition-all duration-300"></div>
 
   </div>
 
-  <div class="flex justify-center mt-8">
-    <div id="qrcode" class="p-4 bg-white rounded-2xl shadow-xl transition-opacity duration-500"></div>
-  </div>
+  <script>
+    // JavaScript tetap sama persis seperti versi sebelumnya
+    const baseUrl = "https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec";
 
-  <div id="countdown" class="text-center mt-4 font-semibold text-lg"></div>
-  <div id="status" class="text-center mt-2 text-sm opacity-80"></div>
+    let timer = null;
+    let countdownInterval = null;
+    let seconds = 300; // 5 menit
+    let isActive = false;
 
-</div>
+    async function generateQR() {
+      if (!isActive) return;
 
-<script>
+      const course = document.getElementById("course").value;
+      const session = document.getElementById("session").value;
 
-const baseUrl = "https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec";
-
-let timer = null;
-let countdownInterval = null;
-let seconds = 300; // 5 menit
-let isActive = false;
-
-async function generateQR() {
-
-  if (!isActive) return;
-
-  const course = document.getElementById("course").value;
-  const session = document.getElementById("session").value;
-
-  const body = new URLSearchParams({
-    path: "presence/qr/generate",
-    course_id: course,
-    session_id: session
-  });
-
-  try {
-
-    const response = await fetch(baseUrl, {
-      method: "POST",
-      body: body
-    });
-
-    const data = await response.json();
-
-    if (!data.ok) {
-      alert("Error: " + data.error);
-      return;
-    }
-
-    const token = data.data.qr_token;
-    const qrDiv = document.getElementById("qrcode");
-
-    qrDiv.style.opacity = "0";
-
-    setTimeout(() => {
-      qrDiv.innerHTML = "";
-      new QRCode(qrDiv, {
-        text: token,
-        width: 230,
-        height: 230
+      const body = new URLSearchParams({
+        path: "presence/qr/generate",
+        course_id: course,
+        session_id: session
       });
-      qrDiv.style.opacity = "1";
-    }, 300);
 
-    seconds = 300;
+      try {
+        const response = await fetch(baseUrl, {
+          method: "POST",
+          body: body
+        });
 
-  } catch (err) {
-    console.error("Fetch error:", err);
-  }
-}
+        const data = await response.json();
 
-function startCountdown() {
+        if (!data.ok) {
+          alert("Error: " + data.error);
+          return;
+        }
 
-  countdownInterval = setInterval(() => {
+        const token = data.data.qr_token;
+        const qrDiv = document.getElementById("qrcode");
 
-    document.getElementById("countdown").innerText =
-      "QR berubah dalam " + seconds + " detik";
+        qrDiv.style.opacity = "0";
 
-    seconds--;
+        setTimeout(() => {
+          qrDiv.innerHTML = "";
+          new QRCode(qrDiv, {
+            text: token,
+            width: 280,
+            height: 280,
+            colorDark: "#ffffff",
+            colorLight: "#000000"
+          });
+          qrDiv.style.opacity = "1";
+        }, 300);
 
-    if (seconds < 0) {
-      generateQR();
+        seconds = 300;
+
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
     }
 
-  }, 1000);
-}
+    function startCountdown() {
+      countdownInterval = setInterval(() => {
+        document.getElementById("countdown").innerText =
+          "QR akan berubah dalam " + seconds + " detik";
 
-function startPresence() {
+        seconds--;
 
-  if (isActive) return;
+        if (seconds < 0) {
+          generateQR();
+        }
+      }, 1000);
+    }
 
-  isActive = true;
+    function startPresence() {
+      if (isActive) return;
 
-  document.getElementById("status").innerText = "Status: Presensi Aktif";
-  document.getElementById("status").className = "text-center mt-2 text-sm text-green-300";
+      isActive = true;
 
-  generateQR();
-  startCountdown();
+      document.getElementById("status").innerText = "Status: Presensi Aktif";
+      document.getElementById("status").className = "text-center mt-3 text-base text-emerald-400 font-semibold";
 
-  timer = setInterval(() => {
-    generateQR();
-  }, 300000); // 5 menit
-}
+      generateQR();
+      startCountdown();
 
-function stopPresence() {
+      timer = setInterval(() => {
+        generateQR();
+      }, 300000); // 5 menit
+    }
 
-  isActive = false;
+    function stopPresence() {
+      isActive = false;
 
-  clearInterval(timer);
-  clearInterval(countdownInterval);
+      clearInterval(timer);
+      clearInterval(countdownInterval);
 
-  document.getElementById("countdown").innerText = "";
-  document.getElementById("status").innerText = "Status: Presensi Berhenti";
-  document.getElementById("status").className = "text-center mt-2 text-sm text-red-300";
-
-}
-
-</script>
-
+      document.getElementById("countdown").innerText = "";
+      document.getElementById("status").innerText = "Status: Presensi Berhenti";
+      document.getElementById("status").className = "text-center mt-3 text-base text-red-400 font-semibold";
+    }
+  </script>
 </body>
 </html>

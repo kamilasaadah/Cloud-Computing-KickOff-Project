@@ -1,255 +1,315 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scan QR Presensi</title>
   <script src="https://cdn.jsdelivr.net/gh/cozmo/jsQR@master/dist/jsQR.js"></script>
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script> -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+    }
+    .pulse-glow { animation: pulseGlow 2s infinite; }
+
+    select {
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 20 20'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.5em;
+    }
+    select option {
+      background-color: #111827;
+      color: white;
+    }
+    select option:hover {
+      background-color: #374151;
+    }
+    select:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+    }
+  </style>
 </head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-4 sm:p-6 md:p-8">
 
-<body class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 min-h-screen flex items-center justify-center">
+  <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 w-full max-w-md sm:max-w-lg md:max-w-xl transition-all duration-300">
 
-<div class="bg-white/20 backdrop-blur-xl shadow-2xl rounded-3xl p-10 w-[480px] text-white">
-
-  <h2 class="text-2xl font-bold text-center mb-6">Scan QR Presensi</h2>
-
-  <div class="space-y-4">
-
-    <div>
-      <label class="block mb-1 text-sm">Base URL (untuk swap test)</label>
-      <input id="baseUrl" class="w-full p-2 rounded-lg text-black" placeholder="https://script.google.com/macros/s/.../exec" value="">
-      <select id="urlHistory" class="w-full mt-2 p-2 rounded-lg text-black" onchange="loadUrl()">
-        <option value="">-- Pilih URL Sebelumnya --</option>
-      </select>
-      <button onclick="saveUrl()" class="mt-2 bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg hover:scale-105 transition">Simpan URL</button>
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400 flex items-center justify-center gap-3">
+        <i class="fas fa-qrcode"></i> Presensi QR
+      </h1>
+      <p class="text-sm sm:text-base opacity-80 mt-2">Scan QR yang ditampilkan dosen untuk check-in</p>
     </div>
 
-    <div>
-      <label class="block mb-1 text-sm">NIM / User ID</label>
-      <input id="userId" class="w-full p-2 rounded-lg text-black" placeholder="2023xxxx">
+    <!-- Form -->
+    <div class="space-y-6">
+
+      <div>
+        <label class="block mb-2 text-sm font-medium opacity-90">Base URL (untuk swap test)</label>
+        <input id="baseUrl" class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40 transition" placeholder="https://script.google.com/macros/s/.../exec" value="">
+        <select id="urlHistory" class="w-full mt-2 p-3.5 rounded-xl bg-black/50 border border-white/20 text-white focus:outline-none focus:border-emerald-500 transition" onchange="loadUrl()">
+          <option value="">-- Pilih URL Sebelumnya --</option>
+        </select>
+        <button onclick="saveUrl()" class="mt-3 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 rounded-2xl shadow-xl flex items-center justify-center gap-3">
+          Simpan URL
+        </button>
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium opacity-90">NIM / User ID</label>
+        <input id="userId" class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40 transition" placeholder="2023xxxx">
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium opacity-90">Device ID</label>
+        <input id="deviceId" class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40 transition" placeholder="dev-001" value="dev-001">
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium opacity-90">Course</label>
+        <select id="course" class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white focus:outline-none focus:border-emerald-500 transition">
+          <option value="cloud-101">cloud-101</option>
+          <option value="cloud-102">cloud-102</option>
+          <option value="cloud-103">cloud-103</option>
+          <option value="cloud-104">cloud-104</option>
+          <option value="cloud-105">cloud-105</option>
+          <option value="cloud-106">cloud-106</option>
+          <option value="cloud-107">cloud-107</option>
+          <option value="cloud-108">cloud-108</option>
+          <option value="cloud-109">cloud-109</option>
+          <option value="cloud-110">cloud-110</option>
+        </select>
+        <p class="text-xs mt-1.5 opacity-75">Pilih course sesuai QR yang ditampilkan dosen.</p>
+      </div>
+
+      <div>
+        <label class="block mb-2 text-sm font-medium opacity-90">Session</label>
+        <select id="session" class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white focus:outline-none focus:border-emerald-500 transition">
+          <option value="sesi-01">sesi-01</option>
+          <option value="sesi-02">sesi-02</option>
+          <option value="sesi-03">sesi-03</option>
+          <option value="sesi-04">sesi-04</option>
+          <option value="sesi-05">sesi-05</option>
+          <option value="sesi-06">sesi-06</option>
+          <option value="sesi-07">sesi-07</option>
+          <option value="sesi-08">sesi-08</option>
+          <option value="sesi-09">sesi-09</option>
+          <option value="sesi-10">sesi-10</option>
+        </select>
+        <p class="text-xs mt-1.5 opacity-75">Pilih session sesuai QR yang ditampilkan dosen.</p>
+      </div>
+
+      <button onclick="startScan()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 rounded-2xl transition transform hover:scale-[1.03] shadow-xl flex items-center justify-center gap-3 pulse-glow">
+        <i class="fas fa-camera text-xl"></i> Mulai Scan QR
+      </button>
+
     </div>
 
-    <div>
-      <label class="block mb-1 text-sm">Device ID</label>
-      <input id="deviceId" class="w-full p-2 rounded-lg text-black" placeholder="dev-001" value="dev-001"> <!-- Default value -->
+    <!-- Scan Preview Area -->
+    <div class="mt-10 flex justify-center">
+      <div class="relative w-full max-w-[300px] sm:max-w-[360px] md:max-w-[420px] aspect-square rounded-3xl overflow-hidden border-4 border-emerald-500/50 shadow-2xl bg-black/60 pulse-glow">
+        <video id="video" class="absolute inset-0 w-full h-full object-cover hidden" playsinline autoplay muted></video>
+        <canvas id="canvas" class="hidden"></canvas>
+        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+          <div class="w-4/5 h-4/5 border-2 border-emerald-400 rounded-2xl opacity-70"></div>
+        </div>
+        <div class="absolute inset-x-0 top-1/2 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-60"></div>
+      </div>
     </div>
 
-    <div>
-      <label class="block mb-1 text-sm">Course</label>
-      <select id="course" class="w-full p-2 rounded-lg text-black">
-        <option value="cloud-101">cloud-101</option>
-        <option value="cloud-102">cloud-102</option>
-        <option value="cloud-103">cloud-103</option>
-        <option value="cloud-104">cloud-104</option>
-        <option value="cloud-105">cloud-105</option>
-        <option value="cloud-106">cloud-106</option>
-        <option value="cloud-107">cloud-107</option>
-        <option value="cloud-108">cloud-108</option>
-        <option value="cloud-109">cloud-109</option>
-        <option value="cloud-110">cloud-110</option>
-      </select>
-      <p class="text-xs mt-1 opacity-80">Pilih course sesuai QR yang ditampilkan dosen.</p>
+    <!-- Tombol Kembali ke Home (baru ditambahkan di sini) -->
+    <div class="mt-8 flex justify-center">
+      <a href="../../index.html" 
+         class="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-bold py-4 px-10 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 text-lg">
+        <i class="fas fa-home"></i> Kembali ke Home
+      </a>
     </div>
 
-    <div>
-      <label class="block mb-1 text-sm">Session</label>
-      <select id="session" class="w-full p-2 rounded-lg text-black">
-        <option value="sesi-01">sesi-01</option>
-        <option value="sesi-02">sesi-02</option>
-        <option value="sesi-03">sesi-03</option>
-        <option value="sesi-04">sesi-04</option>
-        <option value="sesi-05">sesi-05</option>
-        <option value="sesi-06">sesi-06</option>
-        <option value="sesi-07">sesi-07</option>
-        <option value="sesi-08">sesi-08</option>
-        <option value="sesi-09">sesi-09</option>
-        <option value="sesi-10">sesi-10</option>
-      </select>
-      <p class="text-xs mt-1 opacity-80">Pilih session sesuai QR yang ditampilkan dosen.</p>
-    </div>
-
-    <button onclick="startScan()" class="w-full bg-white text-purple-600 font-semibold py-2 rounded-lg hover:scale-105 transition">Scan QR</button>
+    <!-- Status -->
+    <div id="status" class="text-center mt-8 text-lg font-semibold min-h-[5rem] transition-all duration-300"></div>
 
   </div>
 
-  <div class="flex justify-center mt-8">
-    <video id="video" width="300" height="200" class="rounded-2xl shadow-xl hidden"></video>
-    <canvas id="canvas" class="hidden"></canvas>
-  </div>
+  <script>
+    let video = document.getElementById("video");
+    let canvas = document.getElementById("canvas");
+    let canvasCtx = canvas.getContext("2d");
+    let scanning = false;
 
-  <div id="status" class="text-center mt-4 font-semibold text-lg"></div>
+    // Load URL history from localStorage
+    window.onload = function() {
+      let urls = JSON.parse(localStorage.getItem("urlHistory")) || [];
+      let select = document.getElementById("urlHistory");
+      urls.forEach(url => {
+        let option = document.createElement("option");
+        option.value = url;
+        option.text = url.substring(0, 30) + "...";
+        select.appendChild(option);
+      });
+    };
 
-</div>
-
-<script>
-
-let video = document.getElementById("video");
-let canvas = document.getElementById("canvas");
-let canvasCtx = canvas.getContext("2d");
-let scanning = false;
-
-// Load URL history from localStorage
-window.onload = function() {
-  let urls = JSON.parse(localStorage.getItem("urlHistory")) || [];
-  let select = document.getElementById("urlHistory");
-  urls.forEach(url => {
-    let option = document.createElement("option");
-    option.value = url;
-    option.text = url.substring(0, 30) + "...";
-    select.appendChild(option);
-  });
-};
-
-function loadUrl() {
-  let select = document.getElementById("urlHistory");
-  document.getElementById("baseUrl").value = select.value;
-}
-
-function saveUrl() {
-  let url = document.getElementById("baseUrl").value;
-  if (!url) return alert("Masukkan Base URL dulu!");
-  
-  let urls = JSON.parse(localStorage.getItem("urlHistory")) || [];
-  if (!urls.includes(url)) {
-    urls.push(url);
-    localStorage.setItem("urlHistory", JSON.stringify(urls));
-    let select = document.getElementById("urlHistory");
-    let option = document.createElement("option");
-    option.value = url;
-    option.text = url.substring(0, 30) + "...";
-    select.appendChild(option);
-    alert("URL disimpan!");
-  } else {
-    alert("URL sudah ada!");
-  }
-}
-
-async function startScan() {
-  if (scanning) return;
-
-  const baseUrl = document.getElementById("baseUrl").value;
-  const userId = document.getElementById("userId").value;
-  const deviceId = document.getElementById("deviceId").value;
-  const course = document.getElementById("course").value;
-  const session = document.getElementById("session").value;
-
-  if (!baseUrl || !userId || !deviceId || !course || !session) {
-    return alert("Isi semua field!");
-  }
-
-  scanning = true;
-  document.getElementById("status").innerText = "Membuka kamera...";
-  document.getElementById("status").className = "text-yellow-300"; // Loading initial
-
-  video.classList.remove("hidden");
-  canvas.width = 300;
-  canvas.height = 200;
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    video.srcObject = stream;
-    video.play();
-    requestAnimationFrame(scanQR);
-  } catch (err) {
-    document.getElementById("status").innerText = "Error akses kamera: " + err;
-    document.getElementById("status").className = "text-red-300";
-    scanning = false;
-  }
-
-  async function scanQR() {
-    if (!scanning) return;
-
-    canvasCtx.drawImage(video, 0, 0, 300, 200);
-    const imageData = canvasCtx.getImageData(0, 0, 300, 200);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-    if (code) {
-      const qr_token = code.data;
-      document.getElementById("status").innerText = "QR terdeteksi: " + qr_token;
-      document.getElementById("status").className = "text-green-300"; // Hijau untuk deteksi
-      stopScan();
-      await sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token);
-    } else {
-      requestAnimationFrame(scanQR);
+    function loadUrl() {
+      let select = document.getElementById("urlHistory");
+      document.getElementById("baseUrl").value = select.value;
     }
-  }
-}
 
-function stopScan() {
-  scanning = false;
-  video.pause();
-  if (video.srcObject) {
-    video.srcObject.getTracks().forEach(track => track.stop());
-  }
-  video.classList.add("hidden");
-}
-
-async function sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token) {
-  document.getElementById("status").innerText = "Mengirim check-in...";
-  document.getElementById("status").className = "text-yellow-300 animate-pulse"; // Loading spinner effect (pulse)
-
-  const ts = new Date().toISOString();
-  const body = new URLSearchParams({
-    path: "presence/checkin",
-    user_id: userId,
-    device_id: deviceId,
-    course_id: course,
-    session_id: session,
-    qr_token: qr_token,
-    ts: ts
-  });
-
-  try {
-    const response = await fetch(baseUrl, {
-      method: "POST",
-      body: body
-    });
-    const data = await response.json();
-
-    if (data.ok) {
-      document.getElementById("status").innerText = "Check-in berhasil! Presence ID: " + data.data.presence_id;
-      document.getElementById("status").className = "text-green-300";
-    } else {
-      let reason = data.error;
-      if (reason === "token_expired") reason = "Token QR sudah kadaluarsa. Scan ulang!";
-      else if (reason === "invalid_token") reason = "Token QR tidak valid. Pastikan scan yang benar.";
-      else if (reason === "missing_field") reason = "Data kurang lengkap. Cek input!";
-      else reason = reason; // Fallback
-      document.getElementById("status").innerText = "Gagal: " + reason;
-      document.getElementById("status").className = "text-red-300";
+    function saveUrl() {
+      let url = document.getElementById("baseUrl").value;
+      if (!url) return alert("Masukkan Base URL dulu!");
+      
+      let urls = JSON.parse(localStorage.getItem("urlHistory")) || [];
+      if (!urls.includes(url)) {
+        urls.push(url);
+        localStorage.setItem("urlHistory", JSON.stringify(urls));
+        let select = document.getElementById("urlHistory");
+        let option = document.createElement("option");
+        option.value = url;
+        option.text = url.substring(0, 30) + "...";
+        select.appendChild(option);
+        alert("URL disimpan!");
+      } else {
+        alert("URL sudah ada!");
+      }
     }
-  } catch (err) {
-    document.getElementById("status").innerText = "Gagal koneksi: " + err.message + ". Cek jaringan atau URL.";
-    document.getElementById("status").className = "text-red-300";
-  }
-}
 
-async function scanQR() {
-  if (!scanning) return;
+    async function startScan() {
+      if (scanning) return;
 
-  canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const imageData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
+      const baseUrl = document.getElementById("baseUrl").value;
+      const userId = document.getElementById("userId").value;
+      const deviceId = document.getElementById("deviceId").value;
+      const course = document.getElementById("course").value;
+      const session = document.getElementById("session").value;
 
-  try {
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code) {
-      console.log("QR detected:", code.data); // Debug console
-      document.getElementById("status").innerText = "QR terdeteksi: " + code.data;
-      document.getElementById("status").className = "text-green-300";
-      stopScan();
-      await sendCheckIn(baseUrl, userId, deviceId, course, session, code.data);
-    } else {
-      requestAnimationFrame(scanQR);
+      if (!baseUrl || !userId || !deviceId || !course || !session) {
+        document.getElementById("status").innerText = "Isi semua field terlebih dahulu!";
+        document.getElementById("status").className = "text-red-400";
+        return;
+      }
+
+      scanning = true;
+      document.getElementById("status").innerText = "Membuka kamera...";
+      document.getElementById("status").className = "text-yellow-300 animate-pulse";
+
+      video.classList.remove("hidden");
+      const scanSize = Math.min(window.innerWidth * 0.8, 400);
+      canvas.width = scanSize;
+      canvas.height = scanSize;
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        video.play();
+        requestAnimationFrame(scanQR);
+      } catch (err) {
+        document.getElementById("status").innerText = "Error akses kamera: " + err.message;
+        document.getElementById("status").className = "text-red-400";
+        scanning = false;
+      }
+
+      async function scanQR() {
+        if (!scanning) return;
+
+        canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+          const qr_token = code.data;
+          document.getElementById("status").innerText = "QR terdeteksi! Mengirim data...";
+          document.getElementById("status").className = "text-green-400";
+          stopScan();
+          await sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token);
+        } else {
+          requestAnimationFrame(scanQR);
+        }
+      }
     }
-  } catch (err) {
-    console.error("jsQR error:", err);
-    document.getElementById("status").innerText = "Error scanner: " + err.message + ". Cek console.";
-    document.getElementById("status").className = "text-red-300";
-    stopScan();
-  }
-}
 
-</script>
+    function stopScan() {
+      scanning = false;
+      video.pause();
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+      video.classList.add("hidden");
+    }
 
+    async function sendCheckIn(baseUrl, userId, deviceId, course, session, qr_token) {
+      document.getElementById("status").innerText = "Mengirim check-in...";
+      document.getElementById("status").className = "text-yellow-300 animate-pulse";
+
+      const ts = new Date().toISOString();
+      const body = new URLSearchParams({
+        path: "presence/checkin",
+        user_id: userId,
+        device_id: deviceId,
+        course_id: course,
+        session_id: session,
+        qr_token: qr_token,
+        ts: ts
+      });
+
+      try {
+        const response = await fetch(baseUrl, {
+          method: "POST",
+          body: body
+        });
+        const data = await response.json();
+
+        if (data.ok) {
+          const presenceId = data.data.presence_id || "—";
+          window.location.href = `success.html?presence_id=${encodeURIComponent(presenceId)}`;
+        } else {
+          let reason = data.error || "Terjadi kesalahan tidak diketahui";
+          if (reason === "token_expired") reason = "Token QR sudah kadaluarsa. Silakan scan ulang!";
+          else if (reason === "invalid_token") reason = "Token QR tidak valid. Pastikan scan QR yang benar.";
+          else if (reason.includes("missing_field")) reason = "Data kurang lengkap. Mohon cek input Anda.";
+          window.location.href = `error.html?msg=${encodeURIComponent(reason)}`;
+        }
+      } catch (err) {
+        const errMsg = "Gagal koneksi: " + (err.message || "Periksa jaringan atau Base URL Anda.");
+        window.location.href = `error.html?msg=${encodeURIComponent(errMsg)}`;
+      }
+    }
+
+    async function scanQR() {
+      if (!scanning) return;
+
+      canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvasCtx.getImageData(0, 0, canvas.width, canvas.height);
+
+      try {
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+          console.log("QR detected:", code.data);
+          document.getElementById("status").innerText = "QR terdeteksi! Mengirim data...";
+          document.getElementById("status").className = "text-green-400";
+          stopScan();
+          const baseUrl = document.getElementById("baseUrl").value;
+          const userId = document.getElementById("userId").value;
+          const deviceId = document.getElementById("deviceId").value;
+          const course = document.getElementById("course").value;
+          const session = document.getElementById("session").value;
+          await sendCheckIn(baseUrl, userId, deviceId, course, session, code.data);
+        } else {
+          requestAnimationFrame(scanQR);
+        }
+      } catch (err) {
+        console.error("jsQR error:", err);
+        document.getElementById("status").innerText = "Error scanner: " + err.message;
+        document.getElementById("status").className = "text-red-400";
+        stopScan();
+      }
+    }
+  </script>
 </body>
 </html>

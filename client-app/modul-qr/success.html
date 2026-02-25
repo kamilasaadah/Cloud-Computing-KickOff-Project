@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Check-in Berhasil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+    }
+    .pulse-glow { animation: pulseGlow 2s infinite; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-4 sm:p-6 md:p-8">
+
+  <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8 sm:p-10 md:p-12 w-full max-w-md sm:max-w-lg md:max-w-xl text-center transition-all duration-300">
+
+    <div class="mx-auto w-24 h-24 sm:w-32 sm:h-32 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 sm:mb-8 pulse-glow">
+      <i class="fas fa-circle-check text-emerald-400 text-6xl sm:text-8xl"></i>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">
+      Check-in Berhasil!
+    </h1>
+
+    <p class="text-lg sm:text-xl opacity-90 mb-6 sm:mb-8">
+      Presensi Anda telah tercatat dengan sukses.<br>Selamat belajar hari ini!
+    </p>
+
+    <p id="presenceInfo" class="text-base sm:text-lg font-medium text-emerald-300 mb-8 sm:mb-10"></p>
+
+    <a href="scan.html" 
+       class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-4 px-10 sm:px-12 rounded-2xl transition transform hover:scale-105 shadow-xl pulse-glow inline-flex items-center justify-center gap-3 text-lg">
+      <i class="fas fa-circle-check"></i> Selesai
+    </a>
+
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const pid = urlParams.get('presence_id');
+    if (pid && pid !== "—") {
+      document.getElementById('presenceInfo').innerText = `Presence ID: ${pid}`;
+    } else {
+      document.getElementById('presenceInfo').innerText = "Presensi berhasil tercatat";
+    }
+  </script>
+</body>
+</html>
