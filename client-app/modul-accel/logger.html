@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accel Logger</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:40px;
+background:#f7f7f7;
+}
+
+.container{
+max-width:700px;
+background:white;
+padding:30px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1{
+margin-top:0;
+}
+
+input{
+padding:8px;
+width:200px;
+margin-top:5px;
+}
+
+button{
+padding:10px 20px;
+margin-top:10px;
+margin-right:10px;
+cursor:pointer;
+}
+
+.sensor{
+font-size:22px;
+margin:10px 0;
+}
+
+#status{
+margin-top:20px;
+font-weight:bold;
+}
+
+#log{
+margin-top:20px;
+background:#eee;
+padding:10px;
+border-radius:6px;
+white-space:pre-wrap;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Accelerometer Logger</h1>
+
+<label>Device ID</label><br> <input id="deviceId" placeholder="dev-001">
+
+<h2>Live Sensor</h2>
+
+<div class="sensor">X : <span id="x">0</span></div>
+<div class="sensor">Y : <span id="y">0</span></div>
+<div class="sensor">Z : <span id="z">0</span></div>
+
+<button onclick="startLogging()">Start Logging</button> <button onclick="stopLogging()">Stop Logging</button>
+
+<div id="status">Idle</div>
+
+<h3>Server Response</h3>
+<div id="log"></div>
+
+</div>
+
+<script>
+
+const API_BASE_URL="https://YOUR_SCRIPT_URL"
+
+let logging=false
+let batch=[]
+let intervalSender=null
+
+let lastX=0,lastY=0,lastZ=0
+
+// SENSOR LISTENER
+
+if(window.DeviceMotionEvent){
+
+window.addEventListener("devicemotion",event=>{
+
+const acc=event.accelerationIncludingGravity
+if(!acc) return
+
+lastX=acc.x.toFixed(2)
+lastY=acc.y.toFixed(2)
+lastZ=acc.z.toFixed(2)
+
+document.getElementById("x").innerText=lastX
+document.getElementById("y").innerText=lastY
+document.getElementById("z").innerText=lastZ
+
+if(logging){
+
+batch.push({
+x:Number(lastX),
+y:Number(lastY),
+z:Number(lastZ),
+ts:Date.now()
+})
+
+}
+
+})
+
+}else{
+
+alert("DeviceMotion tidak didukung browser")
+
+}
+
+// START
+
+function startLogging(){
+
+const deviceId=document.getElementById("deviceId").value
+
+if(!deviceId){
+alert("Device ID wajib diisi")
+return
+}
+
+logging=true
+batch=[]
+
+document.getElementById("status").innerText="Mengumpulkan data..."
+
+intervalSender=setInterval(sendBatch,5000)
+
+}
+
+// STOP
+
+function stopLogging(){
+
+logging=false
+
+clearInterval(intervalSender)
+
+document.getElementById("status").innerText="Logging berhenti"
+
+}
+
+// SEND BATCH
+
+async function sendBatch(){
+
+if(batch.length===0) return
+
+const deviceId=document.getElementById("deviceId").value
+
+const payload={
+device_id:deviceId,
+data:batch
+}
+
+try{
+
+const res=await fetch(API_BASE_URL+"/telemetry/accel",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(payload)
+})
+
+const json=await res.json()
+
+document.getElementById("status").innerText=
+"Berhasil mengirim "+batch.length+" data"
+
+document.getElementById("log").innerText=
+JSON.stringify(json,null,2)
+
+batch=[]
+
+}catch(err){
+
+document.getElementById("log").innerText=err
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
