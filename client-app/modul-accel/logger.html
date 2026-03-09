@@ -187,6 +187,7 @@ async function sendBatch(){
   const deviceId = document.getElementById("deviceId").value
 
   const payload = {
+    path:"telemetry/accel",
     device_id: deviceId,
     ts: Date.now(),
     samples: batch.map(d => ({
@@ -199,7 +200,7 @@ async function sendBatch(){
 
   try{
 
-    const res = await fetch(API_BASE_URL + "?path=telemetry/accel",{
+    const res = await fetch(API_BASE_URL,{
       method: "POST",
       headers:{
         "Content-Type":"application/json"
