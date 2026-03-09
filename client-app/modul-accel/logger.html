@@ -93,6 +93,7 @@ let logging = false
 let batchInterval = null
 
 let latest = {x:0,y:0,z:0}
+let lastSampleTime = 0
 
 function updateDisplay(x,y,z){
 
@@ -106,6 +107,13 @@ function motionHandler(event){
 
 if(!logging) return
 
+const now = Date.now()
+
+// batasi sampling jadi 5x per detik
+if(now - lastSampleTime < 200) return
+
+lastSampleTime = now
+
 let x = event.accelerationIncludingGravity.x || 0
 let y = event.accelerationIncludingGravity.y || 0
 let z = event.accelerationIncludingGravity.z || 0
@@ -115,7 +123,7 @@ latest = {x,y,z}
 updateDisplay(x,y,z)
 
 samples.push({
-t: Date.now(),
+t: now,
 x:x,
 y:y,
 z:z
