@@ -198,22 +198,17 @@ z: d.z
 
 try{
 
-const res = await fetch(API_BASE_URL+"?path=telemetry/accel",{
+await fetch(API_BASE_URL+"?path=telemetry/accel",{
 method:"POST",
+mode:"no-cors",
 headers:{
 "Content-Type":"application/json"
 },
-redirect:"follow",
 body:JSON.stringify(payload)
 })
 
-const json=await res.json()
-
 document.getElementById("status").innerText=
-"Berhasil mengirim "+batch.length+" data"
-
-document.getElementById("log").innerText=
-JSON.stringify(json,null,2)
+"Data terkirim ("+batch.length+" samples)"
 
 batch=[]
 
