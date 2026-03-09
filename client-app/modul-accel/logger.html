@@ -113,10 +113,10 @@ document.getElementById("z").innerText=lastZ
 if(logging){
 
 batch.push({
-x:Number(lastX),
-y:Number(lastY),
-z:Number(lastZ),
-ts:Date.now()
+t: Date.now(),
+x: Number(lastX),
+y: Number(lastY),
+z: Number(lastZ)
 })
 
 }
@@ -171,12 +171,18 @@ const deviceId=document.getElementById("deviceId").value
 
 const payload={
 device_id:deviceId,
-data:batch
+ts:Date.now(),
+samples: batch.map(d => ({
+t: d.ts,
+x: d.x,
+y: d.y,
+z: d.z
+}))
 }
 
 try{
 
-const res=await fetch(API_BASE_URL+"/telemetry/accel",{
+const res=await fetch(API_BASE_URL+"?path=telemetry/accel",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
