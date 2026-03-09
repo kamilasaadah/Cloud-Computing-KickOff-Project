@@ -179,46 +179,52 @@ document.getElementById("status").innerText="Logging berhenti"
 
 // SEND BATCH
 
+// SEND BATCH
 async function sendBatch(){
 
-if(batch.length===0) return
+  if(batch.length === 0) return
 
-const deviceId=document.getElementById("deviceId").value
+  const deviceId = document.getElementById("deviceId").value
 
-const payload={
-device_id:deviceId,
-ts:Date.now(),
-samples: batch.map(d => ({
-t: d.t,
-x: d.x,
-y: d.y,
-z: d.z
-}))
+  const payload = {
+    device_id: deviceId,
+    ts: Date.now(),
+    samples: batch.map(d => ({
+      t: d.t,
+      x: d.x,
+      y: d.y,
+      z: d.z
+    }))
+  }
+
+  try{
+
+    const res = await fetch(API_BASE_URL + "?path=telemetry/accel",{
+      method: "POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const text = await res.text()
+
+    document.getElementById("status").innerText =
+      "Data terkirim (" + batch.length + " samples)"
+
+    document.getElementById("log").innerText =
+      "SERVER RESPONSE:\n" + text
+
+    batch = []
+
+  }catch(err){
+
+    document.getElementById("log").innerText =
+      "ERROR:\n" + err
+
+  }
+
 }
-
-try{
-
-await fetch(API_BASE_URL+"?path=telemetry/accel",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(payload)
-})
-
-document.getElementById("status").innerText=
-"Data terkirim ("+batch.length+" samples)"
-
-batch=[]
-
-}catch(err){
-
-document.getElementById("log").innerText="ERROR: "+err
-
-}
-
-}
-
 </script>
 
 </body>
