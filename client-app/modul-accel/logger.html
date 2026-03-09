@@ -85,6 +85,22 @@ white-space:pre-wrap;
 
 <script>
 
+window.addEventListener("load", () => {
+
+if(typeof DeviceMotionEvent.requestPermission === "function"){
+
+DeviceMotionEvent.requestPermission()
+.then(response=>{
+if(response==="granted"){
+console.log("sensor aktif")
+}
+})
+.catch(console.error)
+
+}
+
+})
+
 const API_BASE_URL="https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec"
 
 let logging=false
@@ -173,7 +189,7 @@ const payload={
 device_id:deviceId,
 ts:Date.now(),
 samples: batch.map(d => ({
-t: d.ts,
+t: d.t,
 x: d.x,
 y: d.y,
 z: d.z
@@ -182,11 +198,12 @@ z: d.z
 
 try{
 
-const res=await fetch(API_BASE_URL+"?path=telemetry/accel",{
+const res = await fetch(API_BASE_URL+"?path=telemetry/accel",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
+redirect:"follow",
 body:JSON.stringify(payload)
 })
 
@@ -202,7 +219,7 @@ batch=[]
 
 }catch(err){
 
-document.getElementById("log").innerText=err
+document.getElementById("log").innerText="ERROR: "+err
 
 }
 
