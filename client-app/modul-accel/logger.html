@@ -1,233 +1,230 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accelerometer Logger</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accelerometer Logger</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
 
 </head>
 
-<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-6">
+<body
+    class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-6">
 
-<div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8 w-full max-w-lg">
+    <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-8 w-full max-w-lg">
 
-<h1 class="text-3xl font-bold text-center mb-6 text-emerald-400">
-📡 Accelerometer Logger
-</h1>
+        <h1 class="text-3xl font-bold text-center mb-6 text-emerald-400">
+            📡 Accelerometer Logger
+        </h1>
 
-<!-- BASE URL -->
-<div class="mb-4">
-<label class="block text-sm mb-2">Base URL</label>
-<input id="baseUrl"
-class="w-full p-3 rounded-xl bg-black/50 border border-white/20"
-placeholder="https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec">
-</div>
+        <!-- BASE URL -->
+        <div class="mb-4">
+            <label class="block text-sm mb-2">Base URL</label>
+            <input id="baseUrl" class="w-full p-3 rounded-xl bg-black/50 border border-white/20"
+                placeholder="https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec">
+        </div>
 
-<!-- DEVICE ID -->
-<div class="mb-4">
-<label class="block text-sm mb-2">Device ID</label>
-<input id="deviceId"
-class="w-full p-3 rounded-xl bg-black/50 border border-white/20"
-placeholder="dev-001"
-value="dev-001">
-</div>
+        <!-- DEVICE ID -->
+        <div class="mb-4">
+            <label class="block text-sm mb-2">Device ID</label>
+            <input id="deviceId" class="w-full p-3 rounded-xl bg-black/50 border border-white/20" placeholder="dev-001"
+                value="dev-001">
+        </div>
 
-<!-- SENSOR DISPLAY -->
-<div class="grid grid-cols-3 gap-4 text-center mb-6">
+        <!-- SENSOR DISPLAY -->
+        <div class="grid grid-cols-3 gap-4 text-center mb-6">
 
-<div class="bg-black/40 p-4 rounded-xl">
-<p class="text-xs opacity-70">X</p>
-<p id="xVal" class="text-xl font-bold">0</p>
-</div>
+            <div class="bg-black/40 p-4 rounded-xl">
+                <p class="text-xs opacity-70">X</p>
+                <p id="xVal" class="text-xl font-bold">0</p>
+            </div>
 
-<div class="bg-black/40 p-4 rounded-xl">
-<p class="text-xs opacity-70">Y</p>
-<p id="yVal" class="text-xl font-bold">0</p>
-</div>
+            <div class="bg-black/40 p-4 rounded-xl">
+                <p class="text-xs opacity-70">Y</p>
+                <p id="yVal" class="text-xl font-bold">0</p>
+            </div>
 
-<div class="bg-black/40 p-4 rounded-xl">
-<p class="text-xs opacity-70">Z</p>
-<p id="zVal" class="text-xl font-bold">0</p>
-</div>
+            <div class="bg-black/40 p-4 rounded-xl">
+                <p class="text-xs opacity-70">Z</p>
+                <p id="zVal" class="text-xl font-bold">0</p>
+            </div>
 
-</div>
+        </div>
 
-<!-- BUTTON -->
-<div class="flex gap-3 mb-6">
+        <!-- BUTTON -->
+        <div class="flex gap-3 mb-6">
 
-<button onclick="startLogging()"
-class="flex-1 bg-green-600 hover:bg-green-700 p-3 rounded-xl font-bold">
-Start Logging
-</button>
+            <button onclick="startLogging()" class="flex-1 bg-green-600 hover:bg-green-700 p-3 rounded-xl font-bold">
+                Start Logging
+            </button>
 
-<button onclick="stopLogging()"
-class="flex-1 bg-red-600 hover:bg-red-700 p-3 rounded-xl font-bold">
-Stop
-</button>
+            <button onclick="stopLogging()" class="flex-1 bg-red-600 hover:bg-red-700 p-3 rounded-xl font-bold">
+                Stop
+            </button>
 
-</div>
+        </div>
 
-<!-- STATUS -->
-<div class="mb-4 text-sm">
-Status:
-<span id="status" class="text-yellow-300">Idle</span>
-</div>
+        <!-- STATUS -->
+        <div class="mb-4 text-sm">
+            Status:
+            <span id="status" class="text-yellow-300">Idle</span>
+        </div>
 
-<!-- RESPONSE -->
-<div>
-<p class="text-sm mb-2">Server Response</p>
+        <!-- RESPONSE -->
+        <div>
+            <p class="text-sm mb-2">Server Response</p>
 
-<pre id="logResponse"
-class="bg-black/60 p-3 rounded-xl text-xs h-40 overflow-y-auto"></pre>
+            <pre id="logResponse" class="bg-black/60 p-3 rounded-xl text-xs h-40 overflow-y-auto"></pre>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-<script>
+    <script>
 
-let samples = []
-let logging = false
-let batchInterval = null
+        let samples = []
+        let logging = false
+        let batchInterval = null
 
-let latest = {x:0,y:0,z:0}
-let lastSampleTime = 0
+        let latest = { x: 0, y: 0, z: 0 }
+        let lastSampleTime = 0
 
-function updateDisplay(x,y,z){
+        function updateDisplay(x, y, z) {
 
-document.getElementById("xVal").innerText = x.toFixed(2)
-document.getElementById("yVal").innerText = y.toFixed(2)
-document.getElementById("zVal").innerText = z.toFixed(2)
+            document.getElementById("xVal").innerText = x.toFixed(2)
+            document.getElementById("yVal").innerText = y.toFixed(2)
+            document.getElementById("zVal").innerText = z.toFixed(2)
 
-}
+        }
 
-function motionHandler(event){
+        function motionHandler(event) {
 
-if(!logging) return
+            if (!logging) return
 
-const now = Date.now()
+            const now = Date.now()
 
-// batasi sampling jadi 5x per detik
-if(now - lastSampleTime < 200) return
+            // batasi sampling jadi 5x per detik
+            if (now - lastSampleTime < 200) return
 
-lastSampleTime = now
+            lastSampleTime = now
 
-let x = event.accelerationIncludingGravity.x || 0
-let y = event.accelerationIncludingGravity.y || 0
-let z = event.accelerationIncludingGravity.z || 0
+            let x = event.accelerationIncludingGravity.x || 0
+            let y = event.accelerationIncludingGravity.y || 0
+            let z = event.accelerationIncludingGravity.z || 0
 
-latest = {x,y,z}
+            latest = { x, y, z }
 
-updateDisplay(x,y,z)
+            updateDisplay(x, y, z)
 
-samples.push({
-t: now,
-x:x,
-y:y,
-z:z
-})
+            samples.push({
+                t: now,
+                x: x,
+                y: y,
+                z: z
+            })
 
-}
+        }
 
-async function startLogging(){
+        async function startLogging() {
 
-if(logging) return
+            if (logging) return
 
-const deviceId = document.getElementById("deviceId").value
+            const deviceId = document.getElementById("deviceId").value
 
-if(!deviceId){
-alert("Isi Device ID")
-return
-}
+            if (!deviceId) {
+                alert("Isi Device ID")
+                return
+            }
 
-if(typeof DeviceMotionEvent !== "undefined" &&
-typeof DeviceMotionEvent.requestPermission === "function"){
+            if (typeof DeviceMotionEvent !== "undefined" &&
+                typeof DeviceMotionEvent.requestPermission === "function") {
 
-try{
-let permission = await DeviceMotionEvent.requestPermission()
-if(permission !== "granted"){
-alert("Permission sensor ditolak")
-return
-}
-}catch(e){
-alert("Sensor error: "+e.message)
-return
-}
+                try {
+                    let permission = await DeviceMotionEvent.requestPermission()
+                    if (permission !== "granted") {
+                        alert("Permission sensor ditolak")
+                        return
+                    }
+                } catch (e) {
+                    alert("Sensor error: " + e.message)
+                    return
+                }
 
-}
+            }
 
-window.addEventListener("devicemotion", motionHandler)
+            window.addEventListener("devicemotion", motionHandler)
 
-logging = true
+            logging = true
 
-document.getElementById("status").innerText="Mengumpulkan data..."
+            document.getElementById("status").innerText = "Mengumpulkan data..."
 
-batchInterval = setInterval(sendBatch,5000)
+            batchInterval = setInterval(sendBatch, 5000)
 
-}
+        }
 
-function stopLogging(){
+        function stopLogging() {
 
-logging = false
+            logging = false
 
-window.removeEventListener("devicemotion", motionHandler)
+            window.removeEventListener("devicemotion", motionHandler)
 
-clearInterval(batchInterval)
+            clearInterval(batchInterval)
 
-document.getElementById("status").innerText="Stopped"
+            document.getElementById("status").innerText = "Stopped"
 
-}
+        }
 
-async function sendBatch(){
+        async function sendBatch() {
 
-if(samples.length === 0) return
+            if (samples.length === 0) return
 
-const baseUrl = document.getElementById("baseUrl").value
-const deviceId = document.getElementById("deviceId").value
+            const baseUrl = document.getElementById("baseUrl").value
+            const deviceId = document.getElementById("deviceId").value
 
-let batch = samples
-samples = []
+            let batch = samples
+            samples = []
 
-document.getElementById("status").innerText =
-"Sending "+batch.length+" samples..."
+            document.getElementById("status").innerText =
+                "Sending " + batch.length + " samples..."
 
-const body = new URLSearchParams({
-path:"telemetry/accel",
-device_id:deviceId,
-ts:new Date().toISOString(),
-samples: JSON.stringify(batch)
-})
+            const body = new URLSearchParams({
+                path: "telemetry/accel",
+                device_id: deviceId,
+                ts: new Date().toISOString(),
+                samples: JSON.stringify(batch)
+            })
 
-try{
+            try {
 
-const res = await fetch(baseUrl,{
-method:"POST",
-body:body
-})
+                const res = await fetch(baseUrl, {
+                    method: "POST",
+                    body: body
+                })
 
-const data = await res.json()
+                const data = await res.json()
 
-document.getElementById("status").innerText =
-"Berhasil kirim "+batch.length+" data"
+                document.getElementById("status").innerText =
+                    "Berhasil kirim " + batch.length + " data"
 
-document.getElementById("logResponse").innerText =
-JSON.stringify(data,null,2)
+                document.getElementById("logResponse").innerText =
+                    JSON.stringify(data, null, 2)
 
-}catch(err){
+            } catch (err) {
 
-document.getElementById("status").innerText =
-"Error kirim data"
+                document.getElementById("status").innerText =
+                    "Error kirim data"
 
-document.getElementById("logResponse").innerText =
-err.message
+                document.getElementById("logResponse").innerText =
+                    err.message
 
-}
+            }
 
-}
+        }
 
-</script>
+    </script>
 
 </body>
+
 </html>
