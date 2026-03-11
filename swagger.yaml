@@ -1,17 +1,18 @@
 openapi: 3.0.0
 info:
   title: Cloud Computing Kick-Off Project API
-  description: API untuk sistem presensi berbasis QR Code
+  description: API untuk sistem presensi QR Code dengan telemetry Accelerometer dan GPS
   version: 1.0.0
 
 servers:
   - url: https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec
 
 paths:
-  /exec:
+
+  /scan-presence:
     post:
-      summary: Scan Presence / Generate QR
-      description: Endpoint utama untuk scan presensi atau generate QR berdasarkan request body
+      summary: Scan QR Presence
+      description: Mencatat presensi mahasiswa menggunakan QR Code
       requestBody:
         required: true
         content:
@@ -30,31 +31,18 @@ paths:
                 qr_token:
                   type: string
       responses:
-        "200":
-          description: Response sukses
+        '200':
+          description: Presensi berhasil
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                  data:
-                    type: object
-        "400":
-          description: Error response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                  error:
-                    type: string
+              example:
+                ok: true
+                data:
+                  presence_id: PRS-001
 
+  /presence-status:
     get:
-      summary: Presence Status
+      summary: Check Presence Status
       description: Mengecek status presensi mahasiswa
       parameters:
         - name: user_id
@@ -73,17 +61,151 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: Status presensi
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                  data:
+              example:
+                ok: true
+                data:
+                  status: present
+
+  /generate-qr:
+    post:
+      summary: Generate QR Token
+      description: Membuat token QR untuk presensi
+      responses:
+        '200':
+          description: QR token berhasil dibuat
+          content:
+            application/json:
+              example:
+                ok: true
+                data:
+                  qr_token: TKN-IJ7BT5
+
+  /telemetry/accel:
+    post:
+      summary: Kirim Data Accelerometer
+      description: Mengirim data sensor accelerometer dari perangkat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  type: string
+                ts:
+                  type: string
+                samples:
+                  type: array
+                  items:
                     type: object
                     properties:
-                      status:
+                      t:
                         type: string
+                      x:
+                        type: number
+                      y:
+                        type: number
+                      z:
+                        type: number
+      responses:
+        '200':
+          description: Data accelerometer tersimpan
+          content:
+            application/json:
+              example:
+                ok: true
+
+  /telemetry/accel/latest:
+    get:
+      summary: Ambil Data Accelerometer Terbaru
+      parameters:
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Data accelerometer terbaru
+          content:
+            application/json:
+              example:
+                ok: true
+                data:
+                  x: 0.12
+                  y: 0.01
+                  z: 9.70
+
+  /telemetry/gps:
+    post:
+      summary: Kirim Data GPS
+      description: Mengirim data lokasi GPS perangkat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  type: string
+                lat:
+                  type: number
+                lng:
+                  type: number
+                ts:
+                  type: string
+      responses:
+        '200':
+          description: Data GPS tersimpan
+          content:
+            application/json:
+              example:
+                ok: true
+
+  /telemetry/gps/latest:
+    get:
+      summary: Ambil GPS Terbaru
+      parameters:
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lokasi GPS terbaru
+          content:
+            application/json:
+              example:
+                ok: true
+                data:
+                  lat: -7.2575
+                  lng: 112.7521
+
+  /telemetry/gps/history:
+    get:
+      summary: Riwayat GPS
+      parameters:
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Riwayat lokasi GPS
+          content:
+            application/json:
+              example:
+                ok: true
+                data:
+                  - lat: -7.2575
+                    lng: 112.7521
+                  - lat: -7.2576
+                    lng: 112.7523
