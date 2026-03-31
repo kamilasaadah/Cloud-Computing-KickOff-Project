@@ -3,129 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Accelerometer Monitoring Dashboard</title>
+  <title>Accelerometer Logger</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-  <style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <style>   
     @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-      70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 25px rgba(34, 197, 94, 0); }
     }
-    .pulse-glow { animation: pulseGlow 2s infinite; }
-
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-    }
+    .pulse-glow { animation: pulseGlow 2.2s infinite; }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen font-sans">
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-4 sm:p-6">
 
-  <!-- Container utama dashboard -->
-  <div class="container mx-auto px-4 py-6 max-w-7xl">
+  <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-lg">
 
     <!-- Header -->
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-          Accelerometer Monitoring Dashboard
+    <div class="text-center mb-8">
+      <div class="flex items-center justify-center gap-3 mb-2">
+        <i class="fas fa-satellite-dish text-4xl text-emerald-400"></i>
+        <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-teal-400">
+          Accelerometer Logger
         </h1>
-        <p class="text-gray-400 mt-1">Real-time data accelerometer dari perangkat</p>
       </div>
-      <div class="mt-4 md:mt-0 flex items-center gap-4">
-        <input id="deviceId" 
-               class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40"
-               placeholder="Masukkan Device ID" value="dev-001">
-        <button onclick="startMonitoring()" 
-                class="bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-lg font-medium transition pulse-glow flex items-center gap-2">
-          <i class="fas fa-play text-xs"></i> Start
-        </button>
-        <button onclick="stopMonitoring()" 
-                class="bg-red-600/80 hover:bg-red-700 px-6 py-2 rounded-lg font-medium transition flex items-center gap-2">
-          <i class="fas fa-stop text-xs"></i> Stop
-        </button>
-      </div>
-    </header>
+      <p class="text-sm opacity-80">Siap untuk Swap Test</p>
+    </div>
 
-    <!-- Status Bar -->
-    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4 mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse" id="statusDot"></div>
-        <span id="status" class="font-medium">Idle</span>
+    <!-- Base URL - PENTING UNTUK SWAP TEST -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium opacity-90 mb-2 flex items-center gap-2">
+        <i class="fas fa-link text-emerald-400"></i> Base URL (Google Apps Script)
+      </label>
+      <input id="baseUrl" 
+             class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40 transition"
+             placeholder="https://script.google.com/macros/s/..."
+             value="https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec">
+    </div>
+
+    <!-- Device ID -->
+    <div class="mb-8">
+      <label class="block text-sm font-medium opacity-90 mb-2 flex items-center gap-2">
+        <i class="fas fa-microchip text-emerald-400"></i> Device ID
+      </label>
+      <input id="deviceId" 
+             class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40 transition"
+             placeholder="dev-001" value="dev-001">
+    </div>
+
+    <!-- Sensor Values -->
+    <div class="grid grid-cols-3 gap-4 mb-10 text-center">
+      <div class="bg-black/35 backdrop-blur-lg p-5 rounded-2xl border border-emerald-500/30 hover:border-emerald-500/60 transition-all">
+        <p class="text-xs opacity-70 mb-1">X Axis</p>
+        <p id="xVal" class="text-3xl font-extrabold text-emerald-300">0.00</p>
       </div>
-      <div class="text-sm text-gray-400">
-        Last update: <span id="lastUpdate">-</span>
+      <div class="bg-black/35 backdrop-blur-lg p-5 rounded-2xl border border-emerald-500/30 hover:border-emerald-500/60 transition-all">
+        <p class="text-xs opacity-70 mb-1">Y Axis</p>
+        <p id="yVal" class="text-3xl font-extrabold text-emerald-300">0.00</p>
+      </div>
+      <div class="bg-black/35 backdrop-blur-lg p-5 rounded-2xl border border-emerald-500/30 hover:border-emerald-500/60 transition-all">
+        <p class="text-xs opacity-70 mb-1">Z Axis</p>
+        <p id="zVal" class="text-3xl font-extrabold text-emerald-300">0.00</p>
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 card-hover transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-sm text-gray-400">Latest X</p>
-            <p id="xVal" class="text-3xl font-bold text-emerald-400 mt-1">0.00</p>
-          </div>
-          <i class="fas fa-wave-square text-emerald-500/40 text-3xl"></i>
-        </div>
-      </div>
-
-      <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 card-hover transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-sm text-gray-400">Latest Y</p>
-            <p id="yVal" class="text-3xl font-bold text-blue-400 mt-1">0.00</p>
-          </div>
-          <i class="fas fa-wave-square text-blue-500/40 text-3xl"></i>
-        </div>
-      </div>
-
-      <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 card-hover transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-sm text-gray-400">Latest Z</p>
-            <p id="zVal" class="text-3xl font-bold text-pink-400 mt-1">0.00</p>
-          </div>
-          <i class="fas fa-wave-square text-pink-500/40 text-3xl"></i>
-        </div>
-      </div>
-
-      <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-xl p-6 card-hover transition-all">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-sm text-gray-400">Data Points</p>
-            <p id="dataCount" class="text-3xl font-bold text-teal-400 mt-1">0</p>
-          </div>
-          <i class="fas fa-database text-teal-500/40 text-3xl"></i>
-        </div>
-      </div>
+    <!-- Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+      <button onclick="startLogging()" 
+              class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold py-5 px-8 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 pulse-glow text-lg">
+        <i class="fas fa-play"></i> Mulai Logging
+      </button>
+      <button onclick="stopLogging()" 
+              class="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-5 px-8 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 text-lg">
+        <i class="fas fa-stop"></i> Stop
+      </button>
     </div>
 
-    <!-- Main Chart -->
-    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-6 mb-8">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold">Real-time Accelerometer Data</h2>
-        <span class="text-sm text-gray-400">Last 60 seconds</span>
-      </div>
-      <div class="h-96">
-        <canvas id="accelChart"></canvas>
-      </div>
+    <!-- Status -->
+    <div class="text-center mb-6">
+      <p class="text-sm opacity-80">Status:</p>
+      <p id="status" class="text-lg font-semibold text-yellow-300">Idle</p>
     </div>
 
-    <!-- Response Log -->
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-      <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-        <i class="fas fa-server text-emerald-400"></i>
-        Latest API Response
-      </h3>
-      <pre id="logResponse" class="bg-black/60 p-5 rounded-lg text-sm overflow-auto max-h-64 font-mono text-gray-300 whitespace-pre-wrap break-words">
-Menunggu data...
+    <!-- Server Response -->
+    <div>
+      <p class="text-sm mb-3 opacity-90 flex items-center gap-2">
+        <i class="fas fa-server text-emerald-400"></i> Respon Server
+      </p>
+      <pre id="logResponse" class="bg-black/60 backdrop-blur-sm p-5 rounded-2xl text-sm h-48 overflow-y-auto border border-white/10 whitespace-pre-wrap break-words font-mono">
+Siap untuk Swap Test...
       </pre>
     </div>
 
-    <!-- Tombol Kembali ke Home (baru ditambahkan di sini) -->
+    <!-- Tombol Kembali ke Home -->
     <div class="mt-8 flex justify-center">
       <a href="../../index.html" 
          class="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-bold py-4 px-10 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 text-lg">
@@ -136,141 +106,119 @@ Menunggu data...
   </div>
 
   <script>
-    // === KONFIGURASI ===
-    const BASE_URL = "https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec";
-    const MAX_CHART_POINTS = 120; // ~2 menit jika poll 1 detik
+    let samples = [];
+    let logging = false;
+    let batchInterval = null;
+    let latest = { x: 0, y: 0, z: 0 };
+    let lastSampleTime = 0;
 
-    let monitoring = false;
-    let pollInterval = null;
-    let latestData = null;
-    let chart = null;
-    let dataCount = 0;
-
-    function initChart() {
-      const ctx = document.getElementById('accelChart').getContext('2d');
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [
-            { label: 'X Axis', data: [], borderColor: '#10b981', backgroundColor: '#10b98133', tension: 0.2, pointRadius: 0 },
-            { label: 'Y Axis', data: [], borderColor: '#3b82f6', backgroundColor: '#3b82f633', tension: 0.2, pointRadius: 0 },
-            { label: 'Z Axis', data: [], borderColor: '#ec4899', backgroundColor: '#ec489933', tension: 0.2, pointRadius: 0 }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { intersect: false, mode: 'index' },
-          scales: {
-            x: {
-              type: 'time',
-              time: { unit: 'second', displayFormats: { second: 'HH:mm:ss' } },
-              title: { display: true, text: 'Waktu', color: '#9ca3af' },
-              ticks: { color: '#9ca3af' },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            },
-            y: {
-              title: { display: true, text: 'g (m/s²)', color: '#9ca3af' },
-              ticks: { color: '#9ca3af' },
-              grid: { color: 'rgba(255,255,255,0.05)' },
-              suggestedMin: -2,
-              suggestedMax: 2
-            }
-          },
-          plugins: {
-            legend: { labels: { color: '#d1d5db', usePointStyle: true, boxWidth: 10 } },
-            tooltip: { mode: 'index', intersect: false }
-          },
-          animation: { duration: 0 }
-        }
-      });
+    function updateDisplay(x, y, z) {
+      document.getElementById("xVal").innerText = x.toFixed(2);
+      document.getElementById("yVal").innerText = y.toFixed(2);
+      document.getElementById("zVal").innerText = z.toFixed(2);
     }
 
-    function updateStats(x, y, z) {
-      document.getElementById('xVal').innerText = x.toFixed(2);
-      document.getElementById('yVal').innerText = y.toFixed(2);
-      document.getElementById('zVal').innerText = z.toFixed(2);
-      document.getElementById('dataCount').innerText = dataCount;
-      document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
+    function motionHandler(event) {
+      if (!logging) return;
+
+      const now = Date.now();
+      if (now - lastSampleTime < 200) return; // ~5 sampel per detik
+
+      lastSampleTime = now;
+
+      let x = event.accelerationIncludingGravity?.x || 0;
+      let y = event.accelerationIncludingGravity?.y || 0;
+      let z = event.accelerationIncludingGravity?.z || 0;
+
+      latest = { x, y, z };
+      updateDisplay(x, y, z);
+
+      samples.push({ t: now, x, y, z });
     }
 
-    function addDataToChart(t, x, y, z) {
-      const time = new Date(t);
-      chart.data.labels.push(time);
-      chart.data.datasets[0].data.push(x);
-      chart.data.datasets[1].data.push(y);
-      chart.data.datasets[2].data.push(z);
+    async function startLogging() {
+      if (logging) return;
 
-      if (chart.data.labels.length > MAX_CHART_POINTS) {
-        chart.data.labels.shift();
-        chart.data.datasets.forEach(ds => ds.data.shift());
+      const baseUrl = document.getElementById("baseUrl").value.trim();
+      const deviceId = document.getElementById("deviceId").value.trim();
+
+      if (!baseUrl) {
+        alert("Masukkan Base URL terlebih dahulu!");
+        return;
       }
-
-      chart.update('none'); // smooth tanpa animasi
-    }
-
-    async function pollLatestData() {
-      const deviceId = document.getElementById('deviceId').value.trim();
-      if (!deviceId) return;
-
-      try {
-        const url = `${BASE_URL}?path=telemetry/accel/latest&device_id=${encodeURIComponent(deviceId)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        document.getElementById('logResponse').innerText = JSON.stringify(data, null, 2);
-
-        if (data.ok && data.data) {
-          const { t, x, y, z } = data.data;
-
-          if (!latestData || t > latestData.t) {
-            latestData = { t, x, y, z };
-            dataCount++;
-            updateStats(x, y, z);
-            addDataToChart(t, x, y, z);
-
-            document.getElementById('status').innerText = 'Live';
-            document.getElementById('statusDot').className = 'w-3 h-3 rounded-full bg-emerald-500 animate-pulse';
-          }
-        } else {
-          document.getElementById('status').innerText = 'No new data';
-          document.getElementById('statusDot').className = 'w-3 h-3 rounded-full bg-yellow-500';
-        }
-      } catch (err) {
-        document.getElementById('status').innerText = 'Error';
-        document.getElementById('statusDot').className = 'w-3 h-3 rounded-full bg-red-500';
-        document.getElementById('logResponse').innerText = `Error: ${err.message}`;
-      }
-    }
-
-    function startMonitoring() {
-      if (monitoring) return;
-      const deviceId = document.getElementById('deviceId').value.trim();
       if (!deviceId) {
-        alert('Masukkan Device ID!');
+        alert("Masukkan Device ID terlebih dahulu!");
         return;
       }
 
-      if (!chart) initChart();
-      monitoring = true;
-      dataCount = 0;
-      latestData = null;
+      // Izin sensor untuk iOS
+      if (typeof DeviceMotionEvent?.requestPermission === "function") {
+        try {
+          const permission = await DeviceMotionEvent.requestPermission();
+          if (permission !== "granted") {
+            alert("Izin akses sensor ditolak");
+            return;
+          }
+        } catch (e) {
+          alert("Error meminta izin sensor: " + e.message);
+          return;
+        }
+      }
 
-      document.getElementById('status').innerText = 'Connecting...';
-      document.getElementById('statusDot').className = 'w-3 h-3 rounded-full bg-yellow-400 animate-pulse';
+      window.addEventListener("devicemotion", motionHandler);
+      logging = true;
 
-      pollLatestData();
-      pollInterval = setInterval(pollLatestData, 800); // ~1.25 detik
+      document.getElementById("status").innerText = "Mengumpulkan data...";
+      document.getElementById("status").className = "text-lg font-semibold text-emerald-400 animate-pulse";
+
+      batchInterval = setInterval(() => sendBatch(baseUrl, deviceId), 5000);
     }
 
-    function stopMonitoring() {
-      if (!monitoring) return;
-      monitoring = false;
-      clearInterval(pollInterval);
+    function stopLogging() {
+      if (!logging) return;
 
-      document.getElementById('status').innerText = 'Stopped';
-      document.getElementById('statusDot').className = 'w-3 h-3 rounded-full bg-red-500';
+      logging = false;
+      window.removeEventListener("devicemotion", motionHandler);
+      clearInterval(batchInterval);
+
+      document.getElementById("status").innerText = "Stopped";
+      document.getElementById("status").className = "text-lg font-semibold text-red-400";
+    }
+
+    async function sendBatch(baseUrl, deviceId) {
+      if (samples.length === 0) return;
+
+      const batch = samples;
+      samples = [];
+
+      document.getElementById("status").innerText = `Mengirim ${batch.length} sampel...`;
+      document.getElementById("status").className = "text-lg font-semibold text-yellow-300 animate-pulse";
+
+      const body = new URLSearchParams({
+        path: "telemetry/accel",
+        device_id: deviceId,
+        ts: new Date().toISOString(),
+        samples: JSON.stringify(batch)
+      });
+
+      try {
+        const res = await fetch(baseUrl, { 
+          method: "POST", 
+          body 
+        });
+
+        const data = await res.json();
+
+        const accepted = data?.data?.accepted || batch.length;
+        document.getElementById("status").innerText = `Berhasil kirim ${accepted} data`;
+        document.getElementById("status").className = "text-lg font-semibold text-emerald-400";
+
+        document.getElementById("logResponse").innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById("status").innerText = "Gagal mengirim ke server";
+        document.getElementById("status").className = "text-lg font-semibold text-red-400";
+        document.getElementById("logResponse").innerText = `Error: ${err.message}`;
+      }
     }
   </script>
 </body>
