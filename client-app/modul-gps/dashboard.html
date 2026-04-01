@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GPS Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white p-6">
+
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-extrabold text-teal-400 flex items-center justify-center gap-3">
+        <i class="fas fa-map-marked-alt"></i> GPS Dashboard
+      </h1>
+      <p class="opacity-70">Jejak pergerakan + peta live</p>
+    </div>
+
+    <!-- Input -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div>
+        <label class="block text-sm mb-2">Base URL</label>
+        <input id="baseUrl" class="w-full p-3 rounded-xl bg-black/50 border border-white/20" 
+               value="https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec">
+      </div>
+      <div>
+        <label class="block text-sm mb-2">Device ID</label>
+        <input id="deviceId" class="w-full p-3 rounded-xl bg-black/50 border border-white/20" value="dev-001">
+      </div>
+      <div class="flex items-end">
+        <button onclick="loadDashboard()" 
+                class="w-full bg-teal-600 hover:bg-teal-700 py-3 rounded-2xl font-bold text-lg flex items-center justify-center gap-2">
+          <i class="fas fa-sync"></i> Refresh Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Peta -->
+    <div id="map" class="h-96 rounded-3xl border border-white/10 mb-8"></div>
+
+    <!-- Tabel Riwayat -->
+    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+      <i class="fas fa-history text-teal-400"></i> Riwayat Koordinat
+    </h2>
+    <div class="bg-black/40 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10">
+      <table id="historyTable" class="w-full text-sm">
+        <thead class="bg-black/70">
+          <tr>
+            <th class="p-4 text-left">Waktu</th>
+            <th class="p-4 text-left">Latitude</th>
+            <th class="p-4 text-left">Longitude</th>
+            <th class="p-4 text-left">Akurasi (m)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/10 text-white/80"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let map, marker, polyline;
+
+    async function loadDashboard() {
+      const baseUrl = document.getElementById("baseUrl").value.trim();
+      const deviceId = document.getElementById("deviceId").value.trim();
+
+      if (!baseUrl || !deviceId) return alert("Isi Base URL dan Device ID!");
+
+      // Latest + History
+      const [latestRes, historyRes] = await Promise.all([
+        fetch(`${baseUrl}?path=telemetry/gps/latest&device_id=${deviceId}`),
+        fetch(`${baseUrl}?path=telemetry/gps/history&device_id=${deviceId}&limit=200`)
+      ]);
+
+      const latest = await latestRes.json();
+      const history = await historyRes.json();
+
+      if (!history.ok) return alert("Gagal mengambil data");
+
+      const points = history.data.points;
+
+      // Inisialisasi peta
+      if (!map) {
+        map = L.map('map').setView([-7.2575, 112.7521], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      }
+
+      // Hapus layer lama
+      if (marker) marker.remove();
+      if (polyline) polyline.remove();
+
+      // Polyline jejak
+      const latlngs = points.map(p => [p.lat, p.lng]);
+      polyline = L.polyline(latlngs, { color: '#14b8a6', weight: 6, opacity: 0.9 }).addTo(map);
+
+      // Marker terakhir
+      if (points.length > 0) {
+        const last = points[points.length - 1];
+        marker = L.marker([last.lat, last.lng]).addTo(map)
+          .bindPopup(`<b>Terakhir</b><br>${new Date(last.ts).toLocaleString('id-ID')}`)
+          .openPopup();
+        map.fitBounds(polyline.getBounds().pad(0.2));
+      }
+
+      // Isi tabel
+      const tbody = document.querySelector("#historyTable tbody");
+      tbody.innerHTML = points.map(p => `
+        <tr>
+          <td class="p-4">${new Date(p.ts).toLocaleString('id-ID')}</td>
+          <td class="p-4 font-mono">${p.lat.toFixed(6)}</td>
+          <td class="p-4 font-mono">${p.lng.toFixed(6)}</td>
+          <td class="p-4">${p.accuracy_m ? p.accuracy_m.toFixed(1) : '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Auto refresh setiap 10 detik
+    setInterval(() => {
+      if (document.getElementById("baseUrl").value) loadDashboard();
+    }, 10000);
+  </script>
+</body>
+</html>

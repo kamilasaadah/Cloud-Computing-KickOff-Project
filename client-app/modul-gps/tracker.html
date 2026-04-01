@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GPS Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <style>   
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      70% { box-shadow: 0 0 0 25px rgba(34, 197, 94, 0); }
+    }
+    .pulse-glow { animation: pulseGlow 2.2s infinite; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-950 via-indigo-950 to-purple-950 min-h-screen text-white flex items-center justify-center p-4 sm:p-6">
+
+  <div class="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-lg">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="flex items-center justify-center gap-3 mb-2">
+        <i class="fas fa-location-dot text-4xl text-teal-400"></i>
+        <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-cyan-400">
+          GPS Tracker
+        </h1>
+      </div>
+      <p class="text-sm opacity-80">Rekam posisi kamu secara real-time</p>
+    </div>
+
+    <!-- Base URL -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium opacity-90 mb-2 flex items-center gap-2">
+        <i class="fas fa-link text-teal-400"></i> Base URL
+      </label>
+      <input id="baseUrl" 
+             class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/40 transition"
+             placeholder="https://script.google.com/macros/s/..."
+             value="https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec">
+    </div>
+
+    <!-- Device ID -->
+    <div class="mb-8">
+      <label class="block text-sm font-medium opacity-90 mb-2 flex items-center gap-2">
+        <i class="fas fa-microchip text-teal-400"></i> Device ID
+      </label>
+      <input id="deviceId" 
+             class="w-full p-3.5 rounded-xl bg-black/50 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/40 transition"
+             placeholder="dev-001" value="dev-001">
+    </div>
+
+    <!-- Peta -->
+    <div id="map" class="h-80 sm:h-96 rounded-3xl border border-white/10 mb-8 overflow-hidden"></div>
+
+    <!-- Tombol -->
+    <div class="flex flex-col sm:flex-row gap-4">
+      <button onclick="startTracking()" id="btnStart"
+              class="flex-1 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-bold py-5 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 pulse-glow text-lg">
+        <i class="fas fa-play"></i> Mulai Tracking
+      </button>
+      <button onclick="stopTracking()" id="btnStop"
+              class="flex-1 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-5 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 text-lg hidden">
+        <i class="fas fa-stop"></i> Berhenti
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div class="text-center mt-6">
+      <p class="text-sm opacity-80">Status:</p>
+      <p id="status" class="text-lg font-semibold text-yellow-300">Idle</p>
+    </div>
+
+    <!-- Kembali ke Home -->
+    <div class="mt-8 flex justify-center">
+      <a href="../../index.html" 
+         class="bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white font-bold py-4 px-10 rounded-2xl transition transform hover:scale-105 shadow-xl flex items-center justify-center gap-3 text-lg">
+        <i class="fas fa-home"></i> Kembali ke Home
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    let map, marker, watchId;
+    let baseUrlValue = "", deviceIdValue = "";
+
+    function initMap() {
+      map = L.map('map', { zoomControl: true }).setView([-7.2575, 112.7521], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+      marker = L.marker([-7.2575, 112.7521], {
+        icon: L.divIcon({ className: 'custom-marker', html: '📍', iconSize: [30, 30] })
+      }).addTo(map);
+    }
+
+    async function startTracking() {
+      baseUrlValue = document.getElementById("baseUrl").value.trim();
+      deviceIdValue = document.getElementById("deviceId").value.trim();
+
+      if (!baseUrlValue || !deviceIdValue) {
+        alert("Masukkan Base URL dan Device ID terlebih dahulu!");
+        return;
+      }
+
+      document.getElementById("btnStart").classList.add("hidden");
+      document.getElementById("btnStop").classList.remove("hidden");
+      document.getElementById("status").innerHTML = '<span class="text-teal-400">🟢 Tracking aktif...</span>';
+
+      if (navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const { latitude: lat, longitude: lng, accuracy } = position.coords;
+            marker.setLatLng([lat, lng]);
+            map.flyTo([lat, lng], 17, { duration: 1.5 });
+
+            // Kirim ke server setiap 5 detik
+            if (Date.now() % 5000 < 1000) {
+              sendGpsPoint(lat, lng, accuracy);
+            }
+          },
+          (err) => alert("GPS Error: " + err.message),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      }
+    }
+
+    function stopTracking() {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+      document.getElementById("btnStart").classList.remove("hidden");
+      document.getElementById("btnStop").classList.add("hidden");
+      document.getElementById("status").innerHTML = '<span class="text-red-400">⛔ Tracking dihentikan</span>';
+    }
+
+    async function sendGpsPoint(lat, lng, accuracy) {
+      const body = new URLSearchParams({
+        path: "telemetry/gps",
+        device_id: deviceIdValue,
+        ts: new Date().toISOString(),
+        lat: lat,
+        lng: lng,
+        accuracy_m: accuracy || 10
+      });
+
+      try {
+        await fetch(baseUrlValue, { method: "POST", body });
+      } catch (e) {}
+    }
+
+    window.onload = initMap;
+  </script>
+</body>
+</html>
