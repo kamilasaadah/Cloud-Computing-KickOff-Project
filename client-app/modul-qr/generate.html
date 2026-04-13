@@ -141,7 +141,7 @@
 
   <script>
     // JavaScript tetap sama persis seperti versi sebelumnya
-    const baseUrl = "https://script.google.com/macros/s/AKfycbxySS5-lojND4iGPC8mXwi9EDs01mbL50ncC4hT7sfkDZWQC-k3HNuDBtIQmyM7h965/exec";
+    const baseUrl = "https://script.google.com/macros/s/AKfycbw0SWUN4YaeSJL-xRsYMOP1lsXVl5DebVcTgP_sCBTCcjbOrfEcG0RuYMpuW_xgUjLL/exec";
 
     let timer = null;
     let countdownInterval = null;
@@ -154,16 +154,13 @@
       const course = document.getElementById("course").value;
       const session = document.getElementById("session").value;
 
-      const body = new URLSearchParams({
-        path: "presence/qr/generate",
-        course_id: course,
-        session_id: session
-      });
+      // Gunakan GET dengan query params, bukan POST
+      const url = baseUrl + "?path=presence/qr/generate&course_id=" + course + "&session_id=" + session;
 
       try {
-        const response = await fetch(baseUrl, {
-          method: "POST",
-          body: body
+        const response = await fetch(url, {
+          method: "GET",
+          redirect: "follow"  // ← penting! GAS selalu redirect
         });
 
         const data = await response.json();
@@ -221,15 +218,15 @@
       generateQR();
       startCountdown();
 
-      timer = setInterval(() => {
-        generateQR();
-      }, 300000); // 5 menit
+      // timer = setInterval(() => {
+      //   generateQR();
+      // }, 300000); // 5 menit
     }
 
     function stopPresence() {
       isActive = false;
 
-      clearInterval(timer);
+      // clearInterval(timer);
       clearInterval(countdownInterval);
 
       document.getElementById("countdown").innerText = "";
